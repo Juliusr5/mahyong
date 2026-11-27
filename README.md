@@ -8,9 +8,9 @@ Main: **https://juliusr5.github.io/mahyong/**
 
 - Tiap pemain memegang 13 kartu (bandar 14). Pada giliranmu ambil 1, buang 1.
 - Ketuk kartu sekali untuk memilih (terangkat), ketuk lagi atau tekan **Buang** untuk membuang.
-- Tombol **Chi / Pong / Kong / Hu / Lewati** hanya muncul kalau aksinya sah. Chi hanya dari pemain di kiri; **Hu boleh dari buangan pemain mana saja** (termasuk yang di kanan).
+- Tombol **Chi / Bong / Kong / Hu / Lewati** hanya muncul kalau aksinya sah. Chi hanya dari pemain di kiri; **Hu boleh dari buangan pemain mana saja** (termasuk yang di kanan).
 - Menang = 4 set + 1 pasang (atau Thirteen Orphans), batas 5 tai. Tangan lengkap tanpa tai tetap boleh menang sebagai **Chicken Hand** (dasar 2 Kecik). Seven Pairs tidak berlaku. 144 kartu, tanpa kartu hewan.
-- Tai: pong naga / angin kursi / angin putaran 1 per set, bunga sesuai kursi 1 per kartu, semua chi 1, **Ping Hu** (semua chi tanpa bunga, pasangan biasa) 4, semua pong 2, campur satu jenis 2, satu jenis murni 4, tiga naga kecil / empat angin kecil 4, kartu terakhir / pengganti kong / merampok kong 1, tangan batas 5 (tiga naga besar, empat angin besar, semua kehormatan, Thirteen Orphans).
+- Tai: bong naga / angin kursi / angin putaran 1 per set, bunga sesuai kursi 1 per kartu, semua chi 1, **Ping Hu** (semua chi tanpa bunga, pasangan biasa) 4, semua bong 2, campur satu jenis 2, satu jenis murni 4, tiga naga kecil / empat angin kecil 4, kartu terakhir / pengganti kong / merampok kong 1, tangan batas 5 (tiga naga besar, empat angin besar, semua kehormatan, Thirteen Orphans).
 - Bayar: menang dari buangan → pembuang bayar 2× nilai dasar, dua pemain lain 1×; zimo → tiap lawan bayar 2×. Tabel dasar: Chicken Hand = 2, 1 tai = 4, 2 = 8, 3 = 16, 4 = 32, 5 = 64 Kecik (diatur di `js/scoring.js`, `PAY_TABLE`).
 - Ketuk kartu mana pun (di tangan atau di meja) untuk melihat namanya. Nyalakan **Petunjuk** di Pengaturan untuk saran buangan, kartu yang ditunggu, dan peringatan kartu berbahaya. Daftar tai lengkap ada di menu **Bantuan**.
 
@@ -82,9 +82,9 @@ Efek suara dibuat langsung dengan Web Audio di `js/sound.js`, jadi folder `sound
 Bot hanya menerima `view` dari `Round.viewFor(seat)`: tangannya sendiri, semua buangan, set terbuka, bunga, dan sisa dinding. Bot tidak pernah memegang objek ronde, dan di browser berjalan di Web Worker yang hanya menerima data lewat `postMessage`, jadi secara teknis tidak bisa melihat tangan lawan atau urutan dinding.
 
 - **Efisiensi:** shanten cepat (tabel per jenis dengan cache) dan ukeire dari kartu yang belum terlihat.
-- **Nilai tangan:** EV per rencana (biasa, campur satu jenis, satu jenis murni, semua pong, Thirteen Orphans). Saat tenpai, tai tiap kartu tunggu dihitung tepat; tunggu tanpa tai tidak dihitung.
-- **Klaim:** chi/pong/kong hanya kalau EV setelah klaim lebih tinggi dari EV tetap tertutup.
-- **Membaca lawan:** peluang siap per lawan (jumlah buangan, set terbuka, perubahan pola buangan) dan peluang tiap jenis kartu jadi tunggu (buangan lawan, suji, kartu yang sudah habis terlihat, indikasi satu jenis / semua pong).
+- **Nilai tangan:** EV per rencana (biasa, campur satu jenis, satu jenis murni, semua bong, Thirteen Orphans). Saat tenpai, tai tiap kartu tunggu dihitung tepat; tunggu tanpa tai tidak dihitung.
+- **Klaim:** chi/bong/kong hanya kalau EV setelah klaim lebih tinggi dari EV tetap tertutup.
+- **Membaca lawan:** peluang siap per lawan (jumlah buangan, set terbuka, perubahan pola buangan) dan peluang tiap jenis kartu jadi tunggu (buangan lawan, suji, kartu yang sudah habis terlihat, indikasi satu jenis / semua bong).
 - **Serang vs bertahan:** skor = EV serangan − bobot × risiko kena tembak.
 - **Lihat dua langkah (Sulit):** saat kurang satu kartu untuk siap, tiap kartu yang mungkin diambil dicoba, lalu buangan terbaik berikutnya dan tai nyata tiap kartu tunggu dihitung.
 - **Monte Carlo (Sulit):** untuk kandidat yang nyaris seimbang, kartu yang belum terlihat diacak ratusan kali dalam batas ±300 ms di Web Worker.

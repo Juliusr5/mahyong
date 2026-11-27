@@ -83,7 +83,7 @@ function renderActions() {
   } else {
     if (o.hu) b.push(`<button class="btn gold" data-a="hu">Hu</button>`);
     if (o.kong) b.push(`<button class="btn" data-a="kong">Kong</button>`);
-    if (o.pong) b.push(`<button class="btn" data-a="pong">Pong</button>`);
+    if (o.pong) b.push(`<button class="btn" data-a="pong">Bong</button>`);
     if (o.chi) {
       if (o.chi.length === 1) b.push(`<button class="btn" data-a="chi" data-s="${o.chi[0]}">Chi</button>`);
       else for (const s of o.chi) b.push(`<button class="btn chi-opt" data-a="chi" data-s="${s}" aria-label="Chi ${tileName(s)}">${[s, s + 1, s + 2].map((k) => UI.tileK(k)).join('')}</button>`);
@@ -218,7 +218,7 @@ function spokenTile(k) {
 }
 
 function announce(ev) {
-  // Suara singkat: nama kartu 2 kata ("tiga bambu"); dengan nama maksimal 3 kata ("Pak Roti pong", "Kamu menang").
+  // Suara singkat: nama kartu 2 kata ("tiga bambu"); dengan nama maksimal 3 kata ("Pak Roti bong", "Kamu menang").
   const nick = (s) => (s === 0 ? 'Kamu' : UI.PLAYERS[s].name); // "Pak Roti"
   let speak = null;
   for (const e of ev) {
@@ -226,8 +226,9 @@ function announce(ev) {
     if (e.type === 'pong' || e.type === 'chi' || e.type === 'kong') {
       Sound.play('claim');
       Sound.buzz(15);
-      UI.toast(`${UI.PLAYERS[e.seat].name}: ${e.type[0].toUpperCase() + e.type.slice(1)}!`);
-      speak = `${nick(e.seat)} ${e.type}`;
+      const word = e.type === 'pong' ? 'bong' : e.type; // istilah lokal: Bong
+      UI.toast(`${UI.PLAYERS[e.seat].name}: ${word[0].toUpperCase() + word.slice(1)}!`);
+      speak = `${nick(e.seat)} ${word}`;
     }
     if (e.type === 'flower' && round.phase !== 'deal') UI.toast(`${UI.PLAYERS[e.seat].name}: Bunga`, 700);
     if (e.type === 'tsumo' || e.type === 'hu') speak = `${nick(e.seat)} menang`;

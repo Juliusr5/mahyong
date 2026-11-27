@@ -182,7 +182,7 @@ export function formatLog(e) {
   switch (e.type) {
     case 'discard': return `<b>${name(e.seat)}</b> membuang ${tileName(kindOf(e.tile))}`;
     case 'flower': return `<b>${name(e.seat)}</b> membuka ${tileName(kindOf(e.tile))}`;
-    case 'pong': return `<b>${name(e.seat)}</b> pong ${tileName(e.kind)}`;
+    case 'pong': return `<b>${name(e.seat)}</b> bong ${tileName(e.kind)}`;
     case 'chi': return `<b>${name(e.seat)}</b> chi ${tileName(e.kind)}–${tileName(e.kind + 2).split(' ')[0]}`;
     case 'kong': return `<b>${name(e.seat)}</b> kong ${e.concealed ? 'tertutup ' : e.added ? 'tambahan ' : ''}${tileName(e.kind)}`;
     case 'tsumo': return `<b>${name(e.seat)}</b> menang zimo!`;
