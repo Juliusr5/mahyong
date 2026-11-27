@@ -2,6 +2,7 @@
 // node tools/sim.js [ronde=1000] [seed=1] [mcIters=60]
 // Format duplicate: tiap dinding dimainkan 4 kali dengan susunan kursi diputar, jadi tiap level
 // mendapat kartu yang sama di tiap kursi — keberuntungan saling meniadakan.
+// PEEK=nama level yang boleh mengintip tangan 2 kursi lain secara acak (seperti mode Sulit di game).
 // Env: LINEUP="sulit,sedang,mudah,sedang"  TUNE='{"sulit":{"defense":0.5}}' (level baru disalin dari sulit)
 import { Round } from '../js/rules.js';
 import { mulberry32, makeWall } from '../js/tiles.js';
@@ -15,6 +16,7 @@ const mcIters = Number(process.argv[4]) || 60;
 const wallRng = mulberry32(seed);
 const rng = mulberry32(seed * 7919 + 1);
 const LINEUP = (process.env.LINEUP || 'sulit,sedang,mudah,sedang').split(',');
+const PEEK = process.env.PEEK || '';
 const stats = {};
 for (const l of new Set(LINEUP)) stats[l] = { seats: 0, wins: 0, zimo: 0, dealIn: 0, chips: 0, fan: 0, ms: 0, decisions: 0, perDeal: [] };
 
@@ -32,7 +34,8 @@ for (let d = 0; played < N; d++) {
       for (const p of r.pending()) {
         const lv = levels[p.seat];
         const t = performance.now();
-        const a = decide(r.viewFor(p.seat), p, { level: lv, rng, budgetMs: 1e9, mcIters });
+        const peek = lv === PEEK ? [1, 2, 3].map((d) => (p.seat + d) % 4).sort(() => rng() - 0.5).slice(0, 2) : [];
+        const a = decide(r.viewFor(p.seat, peek), p, { level: lv, rng, budgetMs: 1e9, mcIters });
         stats[lv].ms += performance.now() - t;
         stats[lv].decisions++;
         r.act(p.seat, a);
