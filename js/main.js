@@ -11,6 +11,12 @@ import { shanten } from './hand.js';
 
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// Saat HP miring (layar rotasi tampil), bot menunggu sampai HP tegak lagi.
+const landscape = window.matchMedia('(orientation: landscape) and (max-height: 520px)');
+const whileUpright = () => (landscape.matches ? new Promise((r) => {
+  const on = () => { if (!landscape.matches) { landscape.removeEventListener('change', on); r(); } };
+  landscape.addEventListener('change', on);
+}) : null);
 const SPEED = { lambat: 900, normal: 700, cepat: 450 };
 
 let settings = store.loadSettings();
@@ -217,6 +223,7 @@ async function runLoop() {
       let a;
       if (p.seat === 0) a = await humanDecide(p);
       else {
+        await whileUpright();
         const [act] = await Promise.all([botDecide(p.seat, p), sleep(delay())]);
         a = act;
       }

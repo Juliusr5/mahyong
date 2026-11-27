@@ -394,3 +394,15 @@ body.big .actions .btn { min-height: 52px; font-size: 18px; min-width: 88px; }
 body.big .hint-bar { font-size: 14px; }
 body.big .round-info { font-size: 14px; }
 body.big .pname { font-size: 12px; }
+
+/* ===== Mode miring: minta HP ditegakkan ===== */
+.rotate { display: none; position: fixed; inset: 0; z-index: 100; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at center, var(--felt) 0%, var(--felt-dark) 100%); }
+.rotate-card { padding: 22px 28px; text-align: center; }
+.rotate-card svg { animation: tilt 2.4s var(--ease) infinite; }
+@keyframes tilt { 0%, 30% { transform: rotate(90deg); } 60%, 100% { transform: rotate(0deg); } }
+.rotate-title { font-family: var(--serif); font-size: 26px; color: var(--gold); margin: 10px 0 4px; }
+.rotate-sub { color: var(--muted); font-size: 14px; margin: 0; }
+@media (orientation: landscape) and (max-height: 520px) {
+  .rotate { display: flex; }
+}
