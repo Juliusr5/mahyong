@@ -221,7 +221,7 @@ function announce(ev) {
   const who = (s) => UI.PLAYERS[s]?.name;
   const spoken = [];
   for (const e of ev) {
-    if (e.type === 'discard') { Sound.play('tile'); spoken.push(`${e.seat === 0 ? 'Kamu' : who(e.seat)} buang ${spokenTile(kindOf(e.tile))}`); }
+    if (e.type === 'discard') { Sound.play('tile'); if (e.seat !== 0) spoken.push(spokenTile(kindOf(e.tile))); } // buangan sendiri tidak diumumkan
     if (e.type === 'pong' || e.type === 'chi' || e.type === 'kong') {
       Sound.play('claim');
       Sound.buzz(15);
@@ -442,7 +442,7 @@ $('modal').addEventListener('click', (e) => {
   if (m === 'tut-skip') return tutorial(TUTORIAL.length);
   if (m === 'tutorial') { settings.tutorialDone = false; store.save('settings', settings); UI.closeModal(); UI.toast('Tutorial muncul saat main berikutnya'); return; }
   if (m === 'refill') { store.save('chips', 1000); UI.closeModal(); refreshMenu(); UI.toast('Kecik diisi ulang'); }
-  if (m === 'voicetest') { Sound.unlock(); Sound.say('Pak Roti buang tiga bambu. Pak Agus pong!'); return; }
+  if (m === 'voicetest') { Sound.unlock(); Sound.say('Tiga bambu. Pak Agus pong!'); return; }
   if (m === 'reload') { if (round && match) store.save('game', { match, round: round.phase === 'end' ? null : round.toJSON() }); location.reload(); return; }
   if (m === 'quit') { store.save('game', { match, round: round?.phase === 'end' ? null : round?.toJSON() }); toMenu(); }
 });
