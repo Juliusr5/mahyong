@@ -17,6 +17,8 @@ const whileUpright = () => (landscape.matches ? new Promise((r) => {
   const on = () => { if (!landscape.matches) { landscape.removeEventListener('change', on); r(); } };
   landscape.addEventListener('change', on);
 }) : null);
+// Samakan dengan VERSION di sw.js agar mudah mengecek versi di HP.
+const APP_VERSION = '28';
 const SPEED = { lambat: 1800, normal: 1300, cepat: 900 };
 
 let settings = store.loadSettings();
@@ -536,7 +538,8 @@ function showSettings() {
     <div class="field"><span style="font-size:13px;color:var(--muted)">${Sound.hasIndonesianVoice() ? 'Suara bahasa Indonesia tersedia.' : 'Suara Indonesia belum terpasang — lihat Bantuan.'}</span><button class="btn small" data-m="voicetest">Tes suara</button></div>
     <div class="field"><span>Getar</span>${seg('haptics', [[true, 'Nyala'], [false, 'Mati']])}</div>
     <div class="field"><span>Petunjuk</span>${seg('hints', [[true, 'Nyala'], [false, 'Mati']])}</div>
-    <p style="font-size:12px;color:var(--muted)">Kesulitan dan panjang berlaku untuk permainan baru.</p>
+    <p style="font-size:12px;color:var(--muted)">Kesulitan dan panjang berlaku untuk permainan baru. Keberuntungan bot berlaku mulai ronde berikutnya.</p>
+    <p style="font-size:11px;color:var(--muted);text-align:center;margin:4px 0 0">Versi ${APP_VERSION}</p>
     <div class="modal-actions"><button class="btn gold" data-m="close">Selesai</button></div>`);
 }
 
