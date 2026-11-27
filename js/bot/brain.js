@@ -6,9 +6,9 @@ import { scoreHand, basePay, MIN_FAN } from '../scoring.js';
 import { dangerMap } from './danger.js';
 
 export const LEVELS = {
-  mudah: { plans: false, mc: false, defense: 0.12, noise: 0.15, naiveClaims: true },
-  sedang: { plans: true, mc: false, defense: 0.35, noise: 0, naiveClaims: false },
-  sulit: { plans: true, mc: true, defense: 0.4, noise: 0, naiveClaims: false },
+  mudah: { plans: false, mc: false, defense: 0.12, noise: 0.15, naiveClaims: true, claimMargin: 1.08, claimAdd: 0.5, claimDanger: 1 },
+  sedang: { plans: true, mc: false, defense: 0.35, noise: 0, naiveClaims: false, claimMargin: 1.08, claimAdd: 0.5, claimDanger: 1 },
+  sulit: { plans: true, mc: true, defense: 0.4, noise: 0, naiveClaims: false, claimMargin: 1.08, claimAdd: 0.5, claimDanger: 1 },
 };
 export const STYLES = {
   agresif: { defense: 0.75, claim: 0.92 },
@@ -159,7 +159,7 @@ export function handEV(c, melds, view, unseen, cfg, env) {
       const qFinal = (closedOnly ? 2.5 : 6) / U;
       const qMid = (closedOnly ? uke * 0.45 : Math.max(uke * 0.75, 6)) / U;
       const pw = winProb(s, uke / U, qMid, qFinal, qFinal * 0.45, T, env.lambda, closedOnly ? 1 : 1.5);
-      const feasible = fan >= MIN_FAN ? 1 : Math.pow(0.3, MIN_FAN - fan);
+      const feasible = fan >= MIN_FAN ? 1 : Math.pow(cfg.feas ?? 0.3, MIN_FAN - fan);
       ev = pw * payoff(Math.max(fan, MIN_FAN)) * feasible;
     }
     if (ev > best.ev || (best.ev === 0 && s < best.shanten)) best = { ev, plan: p.id, shanten: s, ukeire: uke, fn: p.fn };
@@ -314,7 +314,7 @@ function claimDecision(view, req, cfg) {
   const opts = [];
   const evAfter = (v2) => {
     const r = rankDiscards({ ...v2, wallCount: Math.max(0, v2.wallCount) }, { ...cfg, mc: false }, unseen, env);
-    return r.length ? r[0].ev - cfg.defense * (cfg.styleDefense ?? 1) * r[0].danger : 0;
+    return r.length ? r[0].ev - cfg.claimDanger * cfg.defense * (cfg.styleDefense ?? 1) * r[0].danger : 0;
   };
   if (o.pong) opts.push({ a: { type: 'pong' }, ev: evAfter(withMeld(view, [k, k], { type: 'pong', kind: k, concealed: false, tiles: [] })) });
   if (o.kong) {
@@ -327,8 +327,8 @@ function claimDecision(view, req, cfg) {
     opts.push({ a: { type: 'chi', start: st }, ev: evAfter(withMeld(view, need, { type: 'chi', kind: st, concealed: false, tiles: [] })) });
   }
   opts.sort((a, b) => b.ev - a.ev);
-  const margin = 1.08 * (cfg.styleClaim ?? 1);
-  if (opts.length && opts[0].ev > base * margin + 0.5) return opts[0].a;
+  const margin = cfg.claimMargin * (cfg.styleClaim ?? 1);
+  if (opts.length && opts[0].ev > base * margin + cfg.claimAdd) return opts[0].a;
   return { type: 'pass' };
 }
 

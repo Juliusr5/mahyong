@@ -149,6 +149,11 @@ function onSelect(t) {
 }
 
 // ---------- Tutorial ----------
+function tutorialIntro() {
+  UI.showModal(`<h2>Selamat datang!</h2><p style="text-align:center">Mau lihat tutorial singkat (5 langkah) tentang cara main?</p>
+    <div class="modal-actions"><button class="btn" data-m="tut-skip">Lewati tutorial</button><button class="btn gold" data-m="tut-next" data-step="0">Lihat tutorial</button></div>`);
+}
+
 function tutorial(step = 0) {
   document.querySelectorAll('.spot').forEach((e) => e.classList.remove('spot'));
   if (step >= TUTORIAL.length) {
@@ -161,7 +166,7 @@ function tutorial(step = 0) {
   document.querySelector(s.sel)?.classList.add('spot');
   UI.showModal(`<h2>${s.title}</h2><p style="text-align:center">${s.text}</p>
     <p style="text-align:center;color:var(--muted);font-size:12px">${step + 1} / ${TUTORIAL.length}</p>
-    <div class="modal-actions"><button class="btn" data-m="tut-skip">Lewati</button><button class="btn gold" data-m="tut-next" data-step="${step + 1}">${step + 1 < TUTORIAL.length ? 'Lanjut' : 'Mulai main'}</button></div>`);
+    <div class="modal-actions"><button class="btn" data-m="tut-skip">Lewati tutorial</button><button class="btn gold" data-m="tut-next" data-step="${step + 1}">${step + 1 < TUTORIAL.length ? 'Lanjut' : 'Mulai main'}</button></div>`);
   const md = document.getElementById('modal');
   md.classList.add('tut');
   md.style.alignItems = s.pos === 'top' ? 'flex-start' : 'flex-end';
@@ -349,7 +354,7 @@ function startMatch() {
   match.level = settings.level;
   UI.showScreen('screen-game');
   startRound();
-  if (!settings.tutorialDone) setTimeout(() => tutorial(0), 900);
+  if (!settings.tutorialDone) setTimeout(tutorialIntro, 900);
 }
 
 function resume() {
