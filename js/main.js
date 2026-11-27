@@ -60,6 +60,7 @@ function humanDecide(req) {
 
 function answer(action) {
   if (!ui.resolve) return;
+  $('tile-cap').textContent = '';
   const r = ui.resolve;
   ui.resolve = null;
   ui.req = null;
@@ -100,14 +101,22 @@ $('actions').addEventListener('click', (e) => {
   answer({ type: a });
 });
 
+// ketuk kartu di meja: tampilkan namanya
+document.querySelector('.board').addEventListener('click', (e) => {
+  const t = e.target.closest('.tile');
+  if (t && t.title) { UI.toast(t.title, 1400, true); Sound.play('select'); }
+});
+
 $('hand').addEventListener('click', (e) => {
   const btn = e.target.closest('.htile');
-  if (!btn || ui.req?.type !== 'turn') return;
+  if (!btn) return;
   const t = Number(btn.dataset.tile);
+  if (ui.req?.type !== 'turn') { $('tile-cap').textContent = tileName(kindOf(t)); Sound.play('select'); return; } // bukan giliran: hanya tampilkan nama
   if (ui.selected === t) return answer({ type: 'discard', tile: t });
   ui.selected = t;
   UI.renderHand(round, ui);
   renderActions();
+  $('tile-cap').textContent = tileName(kindOf(t));
   Sound.play('select');
   Sound.buzz(8);
   onSelect(t);

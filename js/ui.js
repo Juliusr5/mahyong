@@ -104,7 +104,7 @@ export function renderHand(r, ui) {
     if (t === drawn) cls.push('drawn');
     const tc = [ui.dealing ? 'deal' : '', ui.marks?.[t] || ''].join(' ');
     const style = ui.dealing ? ` style="animation-delay:${i * 35}ms"` : '';
-    return `<button class="${cls.join(' ')}" data-tile="${t}" ${canPick ? '' : 'disabled'} aria-label="${tileName(kindOf(t))}">` +
+    return `<button class="${cls.join(' ')}" data-tile="${t}" ${canPick ? '' : 'aria-disabled="true"'} aria-label="${tileName(kindOf(t))}">` +
       tile(t, tc).replace('<div class="tile', `<div${style} class="tile`) + '</button>';
   }).join('');
 }
@@ -127,9 +127,10 @@ export function closeModal() { $('modal').classList.remove('tut'); $('modal').st
 export const modalOpen = () => !$('modal').hidden;
 
 let toastTimer;
-export function toast(msg, ms = 1100) {
+export function toast(msg, ms = 1100, big = false) {
   const t = $('toast');
   t.textContent = msg;
+  t.classList.toggle('big', big);
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), ms);

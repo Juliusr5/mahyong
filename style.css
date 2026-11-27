@@ -258,7 +258,7 @@ button { font: inherit; color: inherit; }
 .htile.sel { transform: translateY(-12px); }
 .htile.sel .tile { box-shadow: 0 0 0 2px var(--gold), 0 calc(var(--w) * .13) 0 #2f8a66, 0 10px 18px rgba(0,0,0,.5); }
 .htile.drawn { margin-left: calc(var(--w) * .35); }
-.htile:disabled { cursor: default; }
+.htile:disabled, .htile[aria-disabled] { cursor: default; }
 .actions { display: flex; gap: 8px; justify-content: center; min-height: 52px; align-items: center; flex-wrap: wrap; }
 .actions .btn { min-width: 76px; }
 .chi-opt { display: inline-flex; gap: 1px; --w: 20px; padding: 6px 8px; }
@@ -452,3 +452,18 @@ body.big .pname { font-size: 12px; }
 .opp-left, .opp-right { padding: 0; align-items: center; justify-content: center; }
 .opp-left .oname, .opp-right .oname { writing-mode: vertical-rl; padding: 10px 3px; font-size: 12.5px; }
 .opp-top { padding: 2px 0 4px; }
+
+/* ===== Tangan 2 baris, kartu besar ===== */
+body.big .hand {
+  flex-wrap: wrap; align-content: flex-end; row-gap: 2px;
+  --w: min(calc((100vw - var(--sal) - var(--sar) - 24px) / 7.3), 62px);
+  max-width: calc(var(--w) * 7.3 + 14px); margin: 0 auto; min-height: 0;
+}
+body.big .htile { padding: 6px 0 2px; margin: 0 1px; }
+body.big .htile.sel { transform: translateY(-8px); }
+body.big .htile.drawn .tile { box-shadow: 0 0 0 2px rgba(220,192,138,.85), 0 calc(var(--w) * .13) 0 #2f8a66, 0 6px 12px rgba(0,0,0,.4); }
+/* nama kartu saat diketuk */
+.tile-cap { text-align: center; min-height: 26px; font-family: var(--serif); font-size: 22px; font-weight: 600; color: var(--gold); line-height: 26px; }
+.tile-cap:empty::before { content: 'Ketuk kartu untuk melihat namanya'; font-family: var(--sans); font-size: 12px; font-weight: 400; color: var(--muted); }
+.board .tile { cursor: pointer; }
+.toast.big { font-size: 26px; padding: 12px 24px; }
