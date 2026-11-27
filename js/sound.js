@@ -87,7 +87,7 @@ let idVoice = null;
 function pickVoice() {
   if (!('speechSynthesis' in window)) return null;
   const vs = speechSynthesis.getVoices().filter((v) => v.lang && v.lang.toLowerCase().replace('_', '-').startsWith('id'));
-  const score = (v) => (/premium/i.test(v.name) ? 3 : /enhanced|ditingkatkan/i.test(v.name) ? 2 : 0) + (/damayanti/i.test(v.name) ? 1 : 0) + (v.localService ? 0.5 : 0);
+  const score = (v) => (v.localService ? 4 : 0) + (/premium/i.test(v.name) ? 2 : /enhanced|ditingkatkan/i.test(v.name) ? 1 : 0) + (/damayanti/i.test(v.name) ? 0.5 : 0);
   idVoice = vs.sort((a, b) => score(b) - score(a))[0] || null;
   return idVoice;
 }
@@ -105,17 +105,18 @@ function primeSpeech() {
   speechSynthesis.speak(u);
 }
 
-export function say(text, { interrupt = true } = {}) {
+export function say(text) {
   if (!voice || !enabled || !('speechSynthesis' in window)) return;
   try {
-    if (speechSynthesis.paused) speechSynthesis.resume();
-    if (interrupt) speechSynthesis.cancel();
+    const synth = window.speechSynthesis;
+    if (synth.paused) synth.resume();
+    // iOS: cancel() lalu langsung speak() sering membuat suara diam; hentikan hanya kalau masih bicara
+    if (synth.speaking || synth.pending) synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'id-ID';
-    const v = idVoice || pickVoice(); // iOS sering baru memberi daftar suara belakangan
-    if (v) u.voice = v;
+    u.lang = 'id-ID'; // biarkan iPhone memilih suara Indonesia bawaannya
+    const v = idVoice || pickVoice();
+    if (v && v.localService) u.voice = v; // hanya paksa suara yang benar-benar terpasang
     u.rate = 1;
-    u.pitch = 1.05;
-    speechSynthesis.speak(u);
+    setTimeout(() => synth.speak(u), synth.speaking ? 60 : 0);
   } catch { /* abaikan */ }
 }

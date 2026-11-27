@@ -450,13 +450,15 @@ document.addEventListener('click', (e) => {
   if (!b) return;
   const a = b.dataset.act;
   if (a === 'play') {
+    Sound.unlock();
+    Sound.say('Selamat bermain'); // diucapkan dari sentuhan: membuka izin suara di iPhone
     const g = store.load('game', null);
     if (g && g.round) {
       UI.showModal(`<h2>Mulai baru?</h2><p style="text-align:center">Ronde yang belum selesai akan hilang.</p>
         <div class="modal-actions"><button class="btn" data-m="close">Batal</button><button class="btn gold" data-m="newmatch">Mulai baru</button></div>`);
     } else startMatch();
   }
-  if (a === 'continue') resume();
+  if (a === 'continue') { Sound.unlock(); Sound.say('Selamat bermain'); resume(); }
   if (a === 'refill') refillPrompt();
   if (a === 'menu') {
     UI.showModal(`<h2>Jeda</h2><div class="modal-actions" style="flex-direction:column">
