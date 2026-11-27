@@ -40,7 +40,7 @@ try {
 async function botDecide(seat, req) {
   // Mode Sulit: satu bot acak per ronde mengintip tanganmu dan tangan satu bot lain.
   const peek = round.cheat && round.cheat.seat === seat ? round.cheat.peek : [];
-  const view = round.viewFor(seat, peek);
+  const view = round.viewFor(seat, peek, peek.length > 0);
   const opts = { level: ui.level, style: UI.PLAYERS[seat].style, budgetMs: 300 };
   let a = null;
   if (worker) {
@@ -218,25 +218,22 @@ function spokenTile(k) {
 }
 
 function announce(ev) {
-  const who = (s) => UI.PLAYERS[s]?.name;
-  const spoken = [];
+  // Suara singkat: nama kartu 2 kata ("tiga bambu"); dengan nama maksimal 3 kata ("Pak Roti pong", "Kamu menang").
+  const nick = (s) => (s === 0 ? 'Kamu' : UI.PLAYERS[s].name); // "Pak Roti"
+  let speak = null;
   for (const e of ev) {
-    if (e.type === 'discard') { Sound.play('tile'); if (e.seat !== 0) spoken.push(spokenTile(kindOf(e.tile))); } // buangan sendiri tidak diumumkan
+    if (e.type === 'discard') { Sound.play('tile'); if (e.seat !== 0) speak = spokenTile(kindOf(e.tile)); }
     if (e.type === 'pong' || e.type === 'chi' || e.type === 'kong') {
       Sound.play('claim');
       Sound.buzz(15);
-      UI.toast(`${who(e.seat)}: ${e.type[0].toUpperCase() + e.type.slice(1)}!`);
-      spoken.push(`${e.seat === 0 ? 'Kamu' : who(e.seat)} ${e.type}!`);
+      UI.toast(`${UI.PLAYERS[e.seat].name}: ${e.type[0].toUpperCase() + e.type.slice(1)}!`);
+      speak = `${nick(e.seat)} ${e.type}`;
     }
-    if (e.type === 'flower' && round.phase !== 'deal') { UI.toast(`${who(e.seat)}: Bunga`, 700); spoken.push(`${e.seat === 0 ? 'Kamu' : who(e.seat)} dapat bunga`); }
-    if (e.type === 'tsumo') spoken.push(e.seat === 0 ? 'Kamu menang, zimo!' : `${who(e.seat)} menang, zimo!`);
-    if (e.type === 'hu') spoken.push(e.seat === 0 ? 'Kamu menang!' : `${who(e.seat)} menang!`);
-    if (e.type === 'exhausted') spoken.push('Seri, dinding habis');
+    if (e.type === 'flower' && round.phase !== 'deal') UI.toast(`${UI.PLAYERS[e.seat].name}: Bunga`, 700);
+    if (e.type === 'tsumo' || e.type === 'hu') speak = `${nick(e.seat)} menang`;
+    if (e.type === 'exhausted') speak = 'Seri';
   }
-  // peristiwa penting (klaim/menang/seri) didahulukan dari nama kartu
-  const important = spoken.filter((t) => t.includes('!') || t.startsWith('Seri'));
-  if (important.length) Sound.say(important.join('. '));
-  else if (spoken.length) Sound.say(spoken.join('. '));
+  if (speak) Sound.say(speak);
 }
 
 async function runLoop() {
@@ -442,7 +439,7 @@ $('modal').addEventListener('click', (e) => {
   if (m === 'tut-skip') return tutorial(TUTORIAL.length);
   if (m === 'tutorial') { settings.tutorialDone = false; store.save('settings', settings); UI.closeModal(); UI.toast('Tutorial muncul saat main berikutnya'); return; }
   if (m === 'refill') { store.save('chips', 1000); UI.closeModal(); refreshMenu(); UI.toast('Kecik diisi ulang'); }
-  if (m === 'voicetest') { Sound.unlock(); Sound.say('Tiga bambu. Pak Agus pong!'); return; }
+  if (m === 'voicetest') { Sound.unlock(); Sound.say('Tiga bambu'); return; }
   if (m === 'log') return showLog();
   if (m === 'reload') { if (round && match) store.save('game', { match, round: round.phase === 'end' ? null : round.toJSON() }); location.reload(); return; }
   if (m === 'quit') { store.save('game', { match, round: round?.phase === 'end' ? null : round?.toJSON() }); toMenu(); }
@@ -557,4 +554,4 @@ syncMute();
 document.addEventListener('pointerdown', () => Sound.unlock(), { passive: true });
 document.addEventListener('touchend', () => Sound.unlock(), { passive: true });
 refreshMenu();
-window.__mj = { get round() { return round; }, get match() { return match; }, WIND_NAMES };
+window.__mj = { get round() { return round; }, get match() { return match; }, WIND_NAMES, redraw: () => draw() };

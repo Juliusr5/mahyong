@@ -487,3 +487,9 @@ body.big .htile.drawn .tile { box-shadow: 0 0 0 2px rgba(220,192,138,.85), 0 cal
   animation: drawnGlow 1.6s ease-in-out infinite;
 }
 @keyframes drawnGlow { 50% { box-shadow: 0 0 0 3px #f0d08a, 0 0 6px 1px rgba(240,208,138,.4), 0 calc(var(--w) * .13) 0 #2f8a66, 0 6px 12px rgba(0,0,0,.4); } }
+
+/* ===== Perbaikan: meja tidak boleh meluber saat ruang sempit (banyak set terbuka) ===== */
+.board { grid-template-columns: var(--bx) minmax(0, 1fr) var(--bx); grid-template-rows: var(--by) minmax(0, 1fr) var(--by); overflow: hidden; }
+.center { overflow: hidden; min-height: 0; }
+.me { position: relative; z-index: 2; }
+.me-melds { --w: 22px; }
