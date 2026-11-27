@@ -57,8 +57,10 @@ export function render(r, match, ui) {
   // lawan: info ringkas di sisinya; set terbukanya ditaruh di meja
   for (const s of [1, 2, 3]) {
     const fl = r.flowers[s].length ? `<div class="pcount">${r.flowers[s].length} bunga</div>` : '';
-    const backs = s === 2 ? `<div class="backs" title="${r.hands[s].length} kartu">${r.hands[s].map(() => back()).join('')}</div>` : '';
-    $('opp-' + s).innerHTML = pinfo(r, match, s) + backs + (s === 2 ? fl : '');
+    // kartu berdiri: tampak belakang, sejumlah kartu di tangan lawan + angkanya
+    const n = r.hands[s].length;
+    const stand = `<div class="stand" aria-label="${n} kartu">${'<i></i>'.repeat(n)}<b>${n}</b></div>`;
+    $('opp-' + s).innerHTML = s === 1 ? stand + pinfo(r, match, s) : pinfo(r, match, s) + stand + (s === 2 ? fl : '');
   }
   // meja: set terbuka lalu buangan, semua kartu tegak agar mudah dibaca
   const lastD = r.discardLog.at(-1);
