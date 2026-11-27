@@ -210,18 +210,25 @@ function freshFromLog(prevLen) {
   return { f, ev };
 }
 
+// Ucapan alami: angka jadi kata, nama kartu huruf kecil.
+const ANGKA = ['satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan'];
+function spokenTile(k) {
+  const n = tileName(k).toLowerCase();
+  return n.replace(/^(\d) /, (_, d) => ANGKA[d - 1] + ' ');
+}
+
 function announce(ev) {
   const who = (s) => UI.PLAYERS[s]?.name;
   const spoken = [];
   for (const e of ev) {
-    if (e.type === 'discard') { Sound.play('tile'); spoken.push(tileName(kindOf(e.tile))); }
+    if (e.type === 'discard') { Sound.play('tile'); spoken.push(`${e.seat === 0 ? 'Kamu' : who(e.seat)} buang ${spokenTile(kindOf(e.tile))}`); }
     if (e.type === 'pong' || e.type === 'chi' || e.type === 'kong') {
       Sound.play('claim');
       Sound.buzz(15);
       UI.toast(`${who(e.seat)}: ${e.type[0].toUpperCase() + e.type.slice(1)}!`);
-      spoken.push(`${who(e.seat)}, ${e.type}!`);
+      spoken.push(`${e.seat === 0 ? 'Kamu' : who(e.seat)} ${e.type}!`);
     }
-    if (e.type === 'flower' && round.phase !== 'deal') { UI.toast(`${who(e.seat)}: Bunga`, 700); spoken.push(`${who(e.seat)}, bunga`); }
+    if (e.type === 'flower' && round.phase !== 'deal') { UI.toast(`${who(e.seat)}: Bunga`, 700); spoken.push(`${e.seat === 0 ? 'Kamu' : who(e.seat)} dapat bunga`); }
     if (e.type === 'tsumo') spoken.push(e.seat === 0 ? 'Kamu menang, zimo!' : `${who(e.seat)} menang, zimo!`);
     if (e.type === 'hu') spoken.push(e.seat === 0 ? 'Kamu menang!' : `${who(e.seat)} menang!`);
     if (e.type === 'exhausted') spoken.push('Seri, dinding habis');
@@ -435,6 +442,7 @@ $('modal').addEventListener('click', (e) => {
   if (m === 'tut-skip') return tutorial(TUTORIAL.length);
   if (m === 'tutorial') { settings.tutorialDone = false; store.save('settings', settings); UI.closeModal(); UI.toast('Tutorial muncul saat main berikutnya'); return; }
   if (m === 'refill') { store.save('chips', 1000); UI.closeModal(); refreshMenu(); UI.toast('Kecik diisi ulang'); }
+  if (m === 'voicetest') { Sound.unlock(); Sound.say('Pak Roti buang tiga bambu. Pak Agus pong!'); return; }
   if (m === 'reload') { if (round && match) store.save('game', { match, round: round.phase === 'end' ? null : round.toJSON() }); location.reload(); return; }
   if (m === 'quit') { store.save('game', { match, round: round?.phase === 'end' ? null : round?.toJSON() }); toMenu(); }
 });
@@ -486,6 +494,7 @@ function showSettings() {
     <div class="field"><span>Kecepatan bot</span>${seg('speed', [['lambat', 'Lambat'], ['normal', 'Normal'], ['cepat', 'Cepat']])}</div>
     <div class="field"><span>Suara</span>${seg('sound', [[true, 'Nyala'], [false, 'Mati']])}</div>
     <div class="field"><span>Suara nama kartu</span>${seg('voice', [[true, 'Nyala'], [false, 'Mati']])}</div>
+    <div class="field"><span style="font-size:13px;color:var(--muted)">${Sound.hasIndonesianVoice() ? 'Suara bahasa Indonesia tersedia.' : 'Suara Indonesia belum terpasang — lihat Bantuan.'}</span><button class="btn small" data-m="voicetest">Tes suara</button></div>
     <div class="field"><span>Getar</span>${seg('haptics', [[true, 'Nyala'], [false, 'Mati']])}</div>
     <div class="field"><span>Petunjuk</span>${seg('hints', [[true, 'Nyala'], [false, 'Mati']])}</div>
     <p style="font-size:12px;color:var(--muted)">Kesulitan dan panjang berlaku untuk permainan baru.</p>

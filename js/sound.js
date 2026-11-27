@@ -83,11 +83,15 @@ export function buzz(ms = 12) {
 // Memakai suara bawaan perangkat (Web Speech API), bahasa Indonesia bila tersedia.
 let primed = false;
 let idVoice = null;
+// Pilih suara Indonesia terbaik (mis. "Damayanti (Enhanced)" di iPhone).
 function pickVoice() {
-  if (!('speechSynthesis' in window)) return;
-  const vs = speechSynthesis.getVoices();
-  idVoice = vs.find((v) => v.lang && v.lang.toLowerCase().startsWith('id')) || null;
+  if (!('speechSynthesis' in window)) return null;
+  const vs = speechSynthesis.getVoices().filter((v) => v.lang && v.lang.toLowerCase().replace('_', '-').startsWith('id'));
+  const score = (v) => (/premium/i.test(v.name) ? 3 : /enhanced|ditingkatkan/i.test(v.name) ? 2 : 0) + (/damayanti/i.test(v.name) ? 1 : 0) + (v.localService ? 0.5 : 0);
+  idVoice = vs.sort((a, b) => score(b) - score(a))[0] || null;
+  return idVoice;
 }
+export const hasIndonesianVoice = () => !!(idVoice || pickVoice());
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   pickVoice();
   speechSynthesis.addEventListener?.('voiceschanged', pickVoice);
@@ -108,9 +112,10 @@ export function say(text, { interrupt = true } = {}) {
     if (interrupt) speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'id-ID';
-    if (idVoice) u.voice = idVoice;
-    u.rate = 0.95;
-    u.pitch = 1;
+    const v = idVoice || pickVoice(); // iOS sering baru memberi daftar suara belakangan
+    if (v) u.voice = v;
+    u.rate = 1;
+    u.pitch = 1.05;
     speechSynthesis.speak(u);
   } catch { /* abaikan */ }
 }

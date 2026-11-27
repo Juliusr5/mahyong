@@ -70,6 +70,8 @@ export function helpHTML(tileK) {
   <ul class="fan-list">${pay}</ul>
   <p>Menang dari buangan: pembuang membayar <b>2×</b> nilai dasar, dua pemain lain masing-masing <b>1×</b>. Zimo: ketiga lawan masing-masing membayar <b>2×</b>. Seri (dinding habis): tidak ada yang membayar. Bandar tetap bandar kalau menang atau seri.</p>
   <p style="color:var(--muted)">Kecik hanya mainan — tanpa uang sungguhan.</p>
+  <h3>Suara bahasa Indonesia di iPhone</h3>
+  <p>Kalau suara pengumuman terdengar kaku atau berlogat Inggris, pasang suara Indonesia: buka <b>Pengaturan iPhone → Aksesibilitas → Konten Lisan → Suara → Bahasa Indonesia</b>, lalu unduh <b>Damayanti (Ditingkatkan)</b>. Tutup lalu buka lagi game ini. Pastikan tombol senyap di samping iPhone tidak aktif.</p>
   <h3>Daftar tai</h3>
   ${fans}
   <div class="modal-actions"><button class="btn" data-m="tutorial">Ulangi tutorial</button><button class="btn gold" data-m="close">Tutup</button></div>`;
