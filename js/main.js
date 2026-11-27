@@ -4,7 +4,10 @@ import { kindOf, tileName, WIND_NAMES } from './tiles.js';
 import * as UI from './ui.js';
 import * as store from './storage.js';
 import * as Sound from './sound.js';
-import { decide } from './bot/brain.js';
+import { decide, adviseDiscard } from './bot/brain.js';
+import { helpHTML, TUTORIAL } from './help.js';
+import { countsOf } from './tiles.js';
+import { shanten } from './hand.js';
 
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -43,6 +46,7 @@ async function botDecide(seat, req) {
 function humanDecide(req) {
   ui.req = req;
   ui.selected = null;
+  computeHints(req);
   renderActions();
   UI.renderHand(round, ui);
   return new Promise((resolve) => { ui.resolve = resolve; });
@@ -103,7 +107,65 @@ $('hand').addEventListener('click', (e) => {
   onSelect(t);
 });
 
-function onSelect() { /* diisi fitur petunjuk (Fase 6) */ }
+// ---------- Petunjuk untuk pemula ----------
+let advice = null;
+function waitsAfter(hand, melds, discardKind) {
+  const c = countsOf(hand);
+  c[discardKind]--;
+  if (shanten(c, melds) !== 0) return [];
+  const w = [];
+  for (let k = 0; k < 34; k++) { if (c[k] >= 4) continue; c[k]++; if (shanten(c, melds) === -1) w.push(k); c[k]--; }
+  return w;
+}
+
+function computeHints(req) {
+  ui.marks = null;
+  advice = null;
+  if (!settings.hints) { UI.setHint(''); return; }
+  const view = round.viewFor(0);
+  if (req.type !== 'turn') {
+    const o = req.options;
+    UI.setHint(o.hu ? 'Petunjuk: kamu bisa <b>Hu</b> sekarang!' : 'Petunjuk: buka set hanya kalau mendekatkan tangan ke 3 fan.');
+    return;
+  }
+  if (req.options.tsumo) { UI.setHint('Petunjuk: tanganmu lengkap — tekan <b>Hu</b>!'); return; }
+  advice = adviseDiscard(view);
+  const best = advice.ranked[0];
+  const tile = round.hands[0].find((t) => kindOf(t) === best.kind);
+  ui.marks = { [tile]: 'suggest' };
+  for (const t of round.hands[0]) if (advice.env.danger[kindOf(t)] > 2.5 && t !== tile) ui.marks[t] = 'danger';
+  const waits = waitsAfter(round.hands[0], round.melds[0].length, best.kind);
+  let txt = `Saran: buang <b>${tileName(best.kind)}</b>`;
+  if (waits.length) txt += ` · lalu menunggu ${waits.map((k) => UI.tileK(k, '', 'style="--w:14px;display:inline-block;vertical-align:middle"')).join('')}`;
+  else if (best.shanten > 0) txt += ` · butuh ${best.shanten} kartu lagi untuk siap`;
+  UI.setHint(txt);
+}
+
+function onSelect(t) {
+  if (!settings.hints || !advice) return;
+  const k = kindOf(t);
+  if (advice.env.danger[k] > 2.5) UI.setHint(`⚠ <b>${tileName(k)}</b> terlihat berbahaya — lawan mungkin menunggu kartu ini.`);
+  else computeHints(ui.req);
+}
+
+// ---------- Tutorial ----------
+function tutorial(step = 0) {
+  document.querySelectorAll('.spot').forEach((e) => e.classList.remove('spot'));
+  if (step >= TUTORIAL.length) {
+    settings.tutorialDone = true;
+    store.save('settings', settings);
+    UI.closeModal();
+    return;
+  }
+  const s = TUTORIAL[step];
+  document.querySelector(s.sel)?.classList.add('spot');
+  UI.showModal(`<h2>${s.title}</h2><p style="text-align:center">${s.text}</p>
+    <p style="text-align:center;color:var(--muted);font-size:12px">${step + 1} / ${TUTORIAL.length}</p>
+    <div class="modal-actions"><button class="btn" data-m="tut-skip">Lewati</button><button class="btn gold" data-m="tut-next" data-step="${step + 1}">${step + 1 < TUTORIAL.length ? 'Lanjut' : 'Mulai main'}</button></div>`);
+  const md = document.getElementById('modal');
+  md.classList.add('tut');
+  md.style.alignItems = s.pos === 'top' ? 'flex-start' : 'flex-end';
+}
 
 // ---------- Alur ronde ----------
 function persist() {
@@ -287,6 +349,7 @@ function startMatch() {
   match.level = settings.level;
   UI.showScreen('screen-game');
   startRound();
+  if (!settings.tutorialDone) setTimeout(() => tutorial(0), 900);
 }
 
 function resume() {
@@ -330,6 +393,9 @@ $('modal').addEventListener('click', (e) => {
   if (m === 'menu') return toMenu();
   if (m === 'next') { UI.closeModal(); return startRound(); }
   if (m === 'newmatch') { UI.closeModal(); return startMatch(); }
+  if (m === 'tut-next') return tutorial(Number(b.dataset.step));
+  if (m === 'tut-skip') return tutorial(TUTORIAL.length);
+  if (m === 'tutorial') { settings.tutorialDone = false; store.save('settings', settings); UI.closeModal(); UI.toast('Tutorial muncul saat main berikutnya'); return; }
   if (m === 'refill') { store.save('chips', 1000); UI.closeModal(); refreshMenu(); UI.toast('Kecik diisi ulang'); }
   if (m === 'quit') { store.save('game', { match, round: round?.phase === 'end' ? null : round?.toJSON() }); toMenu(); }
 });
@@ -366,7 +432,7 @@ document.addEventListener('click', (e) => {
   }
   if (a === 'settings') showSettings();
   if (a === 'stats') showStats();
-  if (a === 'help') UI.showModal(`<h2>Bantuan</h2><p>Segera hadir.</p><div class="modal-actions"><button class="btn" data-m="close">Tutup</button></div>`);
+  if (a === 'help') UI.showModal(helpHTML(UI.tileK));
 });
 
 function seg(key, opts) {

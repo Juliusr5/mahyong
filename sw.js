@@ -1,10 +1,10 @@
 // Service worker: simpan semua file agar game bisa dimainkan offline.
 // Naikkan VERSION setiap kali file berubah agar HP mengambil versi baru.
-const VERSION = 'mjz-v2';
+const VERSION = 'mjz-v3';
 const FILES = [
   './', 'index.html', 'style.css', 'manifest.json',
   'js/main.js', 'js/ui.js', 'js/art.js', 'js/tiles.js', 'js/hand.js', 'js/rules.js', 'js/scoring.js',
-  'js/storage.js', 'js/sound.js', 'js/bot/brain.js', 'js/bot/danger.js', 'js/bot/worker.js',
+  'js/storage.js', 'js/sound.js', 'js/help.js', 'js/bot/brain.js', 'js/bot/danger.js', 'js/bot/worker.js',
   'fonts/CormorantGaramond-SemiBold.woff2', 'fonts/CormorantGaramond-SemiBoldItalic.woff2', 'fonts/Inter-Variable.woff2',
   'icons/icon.svg', 'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png',
 ];

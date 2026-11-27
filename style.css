@@ -371,3 +371,10 @@ button { font: inherit; color: inherit; }
 .opp-left .purse b, .opp-right .purse b { font-size: 10.5px; }
 .pinfo .purse { margin-top: 2px; }
 .fan-list ol, .modal ol .purse { vertical-align: middle; }
+
+/* ===== Petunjuk & tutorial ===== */
+.tile.suggest { box-shadow: 0 0 0 2px #8fe0a8, 0 0 12px rgba(143,224,168,.6), 0 4px 8px rgba(0,0,0,.4); }
+.hint-bar { padding: 0 6px; line-height: 1.6; }
+.modal.tut { background: rgba(0,0,0,.25); align-items: flex-end; }
+.modal.tut .modal-card { margin-bottom: 8px; }
+.spot { position: relative; z-index: 11; border-radius: 12px; box-shadow: 0 0 0 3px var(--gold), 0 0 0 9999px rgba(0,0,0,.45); }
