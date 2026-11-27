@@ -503,8 +503,10 @@ body.big .htile.drawn .tile { box-shadow: 0 0 0 2px rgba(220,192,138,.85), 0 cal
 
 /* ===== iPhone: pakai tinggi layar penuh (hindari jarak ganda di bawah) ===== */
 html, body { background: radial-gradient(ellipse at 50% 50%, var(--felt) 0%, var(--felt-2) 62%, var(--felt-dark) 100%) fixed, #06231a; }
+/* iOS menambah efek kaca buram di tepi atas & bawah aplikasi web: jauhkan isi dari zona itu */
+#screen-game { padding-top: calc(var(--sat) + 14px); padding-bottom: max(var(--sab), 8px); }
 @media (display-mode: standalone) {
-  #screen-game { inset: 0 0 auto 0; height: 100vh; height: 100lvh; padding-bottom: max(env(safe-area-inset-bottom, 0px), 6px); }
+  #screen-game { padding-top: calc(var(--sat) + 20px); }
 }
 /* judul atas tegas (tidak terlihat buram) */
 .round-info { color: #d9e2dc; font-size: 13px; }
