@@ -1,7 +1,8 @@
 // Model bahaya: seberapa mungkin sebuah jenis kartu menjadi kartu menang lawan.
 // Hanya memakai data publik dari view.
 import { kindOf, isSuited, suitOf, isDragon } from '../tiles.js';
-import { basePay } from '../scoring.js';
+import { basePay, scoreHand, MIN_FAN } from '../scoring.js';
+import { shanten } from '../hand.js';
 
 const PROG = [0.02, 0.02, 0.03, 0.04, 0.06, 0.09, 0.12, 0.16, 0.21, 0.27, 0.33, 0.4, 0.46, 0.52, 0.57, 0.62];
 
@@ -63,12 +64,37 @@ export function readOpponent(view, o, unseen) {
   return { tenpai, pk, loss, flush, fan };
 }
 
+// Lawan yang tangannya diintip: bahaya dihitung tepat (kartu tunggu sebenarnya beserta tai-nya).
+function exactOpponent(view, o) {
+  const hand = view.peek[o].map(kindOf);
+  const melds = view.melds[o];
+  const c = new Array(34).fill(0);
+  hand.forEach((k) => { if (k < 34) c[k]++; });
+  const pk = new Array(34).fill(0);
+  let loss = 0;
+  if (shanten(c, melds.length) === 0) {
+    const seatWind = (o - view.dealer + 4) % 4;
+    for (let k = 0; k < 34; k++) {
+      if (c[k] >= 4) continue;
+      c[k]++;
+      if (shanten(c, melds.length) === -1) {
+        const kinds = [];
+        for (let j = 0; j < 34; j++) for (let n = 0; n < c[j]; n++) kinds.push(j);
+        const sc = scoreHand({ kinds, melds, selfDrawn: false, seatWind, roundWind: view.roundWind, flowers: view.flowers[o].map(kindOf) });
+        if (sc && sc.fan >= MIN_FAN) { pk[k] = 1; loss = Math.max(loss, 2 * basePay(sc.fan)); }
+      }
+      c[k]--;
+    }
+  }
+  return { tenpai: loss ? 1 : 0, pk, loss, flush: -1, fan: 0 };
+}
+
 export function dangerMap(view, unseen) {
   const d = new Array(34).fill(0);
   const opps = [];
   for (let i = 1; i < 4; i++) {
     const o = (view.seat + i) % 4;
-    const r = readOpponent(view, o, unseen);
+    const r = view.peek && view.peek[o] ? exactOpponent(view, o) : readOpponent(view, o, unseen);
     opps.push(r);
     for (let k = 0; k < 34; k++) d[k] += r.tenpai * r.pk[k] * r.loss;
   }

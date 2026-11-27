@@ -17,7 +17,7 @@ const whileUpright = () => (landscape.matches ? new Promise((r) => {
   const on = () => { if (!landscape.matches) { landscape.removeEventListener('change', on); r(); } };
   landscape.addEventListener('change', on);
 }) : null);
-const SPEED = { lambat: 900, normal: 700, cepat: 450 };
+const SPEED = { lambat: 1800, normal: 1300, cepat: 900 };
 
 let settings = store.loadSettings();
 let stats = store.loadStats();
@@ -38,7 +38,9 @@ try {
 } catch { worker = null; }
 
 async function botDecide(seat, req) {
-  const view = round.viewFor(seat);
+  // Mode Sulit: satu bot acak per ronde mengintip tanganmu dan tangan satu bot lain.
+  const peek = round.cheat && round.cheat.seat === seat ? round.cheat.peek : [];
+  const view = round.viewFor(seat, peek);
   const opts = { level: ui.level, style: UI.PLAYERS[seat].style, budgetMs: 300 };
   let a = null;
   if (worker) {
@@ -209,15 +211,25 @@ function freshFromLog(prevLen) {
 }
 
 function announce(ev) {
+  const who = (s) => UI.PLAYERS[s]?.name;
+  const spoken = [];
   for (const e of ev) {
-    if (e.type === 'discard') Sound.play('tile');
-    if (e.type === 'pong' || e.type === 'chi' || e.type === 'kong') { Sound.play('claim'); Sound.buzz(15); }
-    const who = UI.PLAYERS[e.seat]?.name;
-    if (e.type === 'pong') UI.toast(`${who}: Pong!`);
-    if (e.type === 'chi') UI.toast(`${who}: Chi!`);
-    if (e.type === 'kong') UI.toast(`${who}: Kong!`);
-    if (e.type === 'flower' && round.phase !== 'deal') UI.toast(`${who}: Bunga`, 700);
+    if (e.type === 'discard') { Sound.play('tile'); spoken.push(tileName(kindOf(e.tile))); }
+    if (e.type === 'pong' || e.type === 'chi' || e.type === 'kong') {
+      Sound.play('claim');
+      Sound.buzz(15);
+      UI.toast(`${who(e.seat)}: ${e.type[0].toUpperCase() + e.type.slice(1)}!`);
+      spoken.push(`${who(e.seat)}, ${e.type}!`);
+    }
+    if (e.type === 'flower' && round.phase !== 'deal') { UI.toast(`${who(e.seat)}: Bunga`, 700); spoken.push(`${who(e.seat)}, bunga`); }
+    if (e.type === 'tsumo') spoken.push(e.seat === 0 ? 'Kamu menang, zimo!' : `${who(e.seat)} menang, zimo!`);
+    if (e.type === 'hu') spoken.push(e.seat === 0 ? 'Kamu menang!' : `${who(e.seat)} menang!`);
+    if (e.type === 'exhausted') spoken.push('Seri, dinding habis');
   }
+  // peristiwa penting (klaim/menang/seri) didahulukan dari nama kartu
+  const important = spoken.filter((t) => t.includes('!') || t.startsWith('Seri'));
+  if (important.length) Sound.say(important.join('. '));
+  else if (spoken.length) Sound.say(spoken.join('. '));
 }
 
 async function runLoop() {
@@ -245,7 +257,7 @@ async function runLoop() {
       const mine = pend.find((p) => p.seat === 0);
       if (mine) acts.push([0, await humanDecide(mine)]);
       if (token !== loopToken) return;
-      if (acts.some(([, a]) => a.type !== 'pass') && !mine) await sleep(delay() * 0.6);
+      if (acts.some(([, a]) => a.type !== 'pass') && !mine) await sleep(delay() * 0.8);
       for (const [s, a] of acts) round.act(s, a);
     }
     const { f, ev } = freshFromLog(prevLen);
@@ -253,7 +265,7 @@ async function runLoop() {
     draw(f);
     persist();
     if (round.phase === 'claim' || round.phase === 'robkong') continue;
-    if (ev.some((e) => e.type === 'discard') && round.phase === 'turn' && round.turn !== 0) await sleep(delay() * 0.35);
+    if (ev.some((e) => e.type === 'discard') && round.phase === 'turn' && round.turn !== 0) await sleep(delay() * 0.5);
   }
   if (token === loopToken) finishRound();
 }
@@ -354,6 +366,11 @@ function startRound() {
   // bot yang bangkrut diisi ulang diam-diam; manusia memakai tombol isi ulang
   for (let s = 1; s < 4; s++) if (match.chips[s] <= 0) match.chips[s] = 1000;
   round = new Round({ dealer: match.dealer, roundWind: match.roundWind }).start();
+  if (ui.level === 'sulit') {
+    const seat = 1 + Math.floor(Math.random() * 3);
+    const others = [1, 2, 3].filter((s) => s !== seat);
+    round.cheat = { seat, peek: [0, others[Math.floor(Math.random() * 2)]] };
+  }
   ui.dealing = true;
   draw();
   ui.dealing = false;
@@ -468,6 +485,7 @@ function showSettings() {
     <div class="field"><span>Panjang</span>${seg('length', [['east', '1 putaran'], ['endless', 'Terus']])}</div>
     <div class="field"><span>Kecepatan bot</span>${seg('speed', [['lambat', 'Lambat'], ['normal', 'Normal'], ['cepat', 'Cepat']])}</div>
     <div class="field"><span>Suara</span>${seg('sound', [[true, 'Nyala'], [false, 'Mati']])}</div>
+    <div class="field"><span>Suara nama kartu</span>${seg('voice', [[true, 'Nyala'], [false, 'Mati']])}</div>
     <div class="field"><span>Getar</span>${seg('haptics', [[true, 'Nyala'], [false, 'Mati']])}</div>
     <div class="field"><span>Petunjuk</span>${seg('hints', [[true, 'Nyala'], [false, 'Mati']])}</div>
     <p style="font-size:12px;color:var(--muted)">Kesulitan dan panjang berlaku untuk permainan baru.</p>
@@ -524,5 +542,6 @@ document.body.classList.add('big');
 Sound.configure(settings);
 syncMute();
 document.addEventListener('pointerdown', () => Sound.unlock(), { passive: true });
+document.addEventListener('touchend', () => Sound.unlock(), { passive: true });
 refreshMenu();
 window.__mj = { get round() { return round; }, get match() { return match; }, WIND_NAMES };

@@ -303,9 +303,11 @@ export class Round {
   }
 
   // Data yang boleh dilihat pemain `seat` (tanpa tangan lawan dan urutan dinding).
-  viewFor(seat) {
+  // peek: kursi yang tangannya boleh diintip (hanya untuk mode Sulit atas permintaan pemain).
+  viewFor(seat, peek = []) {
     return {
       seat,
+      peek: Object.fromEntries(peek.filter((p) => p !== seat).map((p) => [p, this.hands[p].slice()])),
       hand: this.hands[seat].slice(),
       drawn: this.turn === seat ? this.drawn : null,
       melds: this.melds.map((ms) => ms.map((m) => ({

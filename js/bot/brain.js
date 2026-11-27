@@ -20,6 +20,7 @@ export function unseenCounts(view) {
   const u = new Array(34).fill(4);
   const see = (k) => { if (k < 34) u[k]--; };
   view.hand.forEach((t) => see(kindOf(t)));
+  Object.values(view.peek || {}).forEach((h) => h.forEach((t) => see(kindOf(t))));
   view.discards.forEach((d) => d.forEach((t) => see(kindOf(t))));
   view.melds.forEach((ms) => ms.forEach((m) => {
     if (m.tiles.length) m.tiles.forEach((t) => see(kindOf(t)));

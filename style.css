@@ -38,6 +38,7 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; }
+html { background: #06231a; } /* cegah area putih di iPhone */
 body {
   font-family: var(--sans);
   color: var(--text);
@@ -56,7 +57,7 @@ body::before {
 }
 body::after { /* vignette */
   content: ''; position: fixed; inset: 0; pointer-events: none;
-  box-shadow: inset 0 0 120px 30px rgba(0,0,0,.55);
+  box-shadow: inset 0 0 90px 10px rgba(0,0,0,.35);
 }
 button { font: inherit; color: inherit; }
 
@@ -467,3 +468,22 @@ body.big .htile.drawn .tile { box-shadow: 0 0 0 2px rgba(220,192,138,.85), 0 cal
 .tile-cap:empty::before { content: 'Ketuk kartu untuk melihat namanya'; font-family: var(--sans); font-size: 12px; font-weight: 400; color: var(--muted); }
 .board .tile { cursor: pointer; }
 .toast.big { font-size: 26px; padding: 12px 24px; }
+
+/* ===== iPhone: isi layar penuh & beri jarak dari notch/status bar ===== */
+#screen-game { position: fixed; inset: 0; height: auto; padding-top: max(var(--sat), 10px); padding-bottom: max(var(--sab), 6px); }
+#screen-menu { padding-top: max(calc(var(--sat) + 8px), 16px); }
+.modal { padding-top: max(calc(var(--sat) + 12px), 16px); }
+
+/* ===== Kartu yang baru diambil ===== */
+.htile.drawn { position: relative; }
+.htile.drawn::before {
+  content: 'BARU'; position: absolute; left: 50%; top: -2px; transform: translateX(-50%); z-index: 2;
+  font-size: 10px; font-weight: 800; letter-spacing: .08em; color: #241a08;
+  background: linear-gradient(180deg, #f3dca6, #c9a35c); padding: 1px 5px; border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.4);
+}
+.htile.drawn .tile, body.big .htile.drawn .tile {
+  box-shadow: 0 0 0 3px #f0d08a, 0 0 16px 4px rgba(240,208,138,.75), 0 calc(var(--w) * .13) 0 #2f8a66, 0 6px 12px rgba(0,0,0,.4);
+  animation: drawnGlow 1.6s ease-in-out infinite;
+}
+@keyframes drawnGlow { 50% { box-shadow: 0 0 0 3px #f0d08a, 0 0 6px 1px rgba(240,208,138,.4), 0 calc(var(--w) * .13) 0 #2f8a66, 0 6px 12px rgba(0,0,0,.4); } }
