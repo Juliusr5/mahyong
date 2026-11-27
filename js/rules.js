@@ -1,7 +1,7 @@
 // Alur satu ronde (state machine tanpa UI) + pengelola pertandingan.
 // Dipakai sama oleh UI dan simulasi Node.
-import { kindOf, isFlower, makeWall, countsOf, countsOfKinds } from './tiles.js';
-import { isWinningShape } from './hand.js';
+import { kindOf, isFlower, makeWall, countsOf } from './tiles.js';
+import { scoreHand, payments, MIN_FAN } from './scoring.js';
 
 export const next = (s) => (s + 1) % 4;
 
@@ -72,12 +72,15 @@ export class Round {
     return true;
   }
 
-  // Skor tangan menang; null jika tidak sah. Ditimpa di Fase 2 dengan penghitung fan.
+  // Skor tangan menang (fan >= MIN_FAN); null jika tidak sah atau fan kurang.
   scoreWin(s, tile, selfDrawn, extra = {}) {
     const kinds = this.hands[s].map(kindOf);
     if (!selfDrawn) kinds.push(kindOf(tile));
-    const c = countsOfKinds(kinds);
-    return isWinningShape(c, this.melds[s].length) ? { fan: 3, items: [] } : null;
+    const sc = scoreHand({
+      kinds, melds: this.melds[s], selfDrawn, seatWind: this.seatWind(s), roundWind: this.roundWind,
+      flowers: this.flowers[s].map(kindOf), last: !!extra.last, kongRep: !!extra.kongRep, robKong: !!extra.robKong,
+    });
+    return sc && sc.fan >= MIN_FAN ? sc : null;
   }
 
   turnOptions() {
@@ -273,7 +276,7 @@ export class Round {
   _finishWin(seat, from, score, tile) {
     const hand = this.hands[seat].slice();
     if (from !== null) hand.push(tile);
-    this.result = { type: 'win', winner: seat, from, score, hand, winTile: tile, payments: [0, 0, 0, 0] };
+    this.result = { type: 'win', winner: seat, from, score, hand, winTile: tile, payments: payments(seat, from, score.fan) };
     this.phase = 'end';
     this.claim = null;
     this.log.push({ seat, type: from === null ? 'tsumo' : 'hu', from, tile });
