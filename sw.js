@@ -1,10 +1,10 @@
 // Service worker: simpan semua file agar game bisa dimainkan offline.
 // Naikkan VERSION setiap kali file berubah agar HP mengambil versi baru.
-const VERSION = 'mjz-v1';
+const VERSION = 'mjz-v2';
 const FILES = [
   './', 'index.html', 'style.css', 'manifest.json',
   'js/main.js', 'js/ui.js', 'js/art.js', 'js/tiles.js', 'js/hand.js', 'js/rules.js', 'js/scoring.js',
-  'js/storage.js', 'js/bot/brain.js', 'js/bot/danger.js', 'js/bot/worker.js',
+  'js/storage.js', 'js/sound.js', 'js/bot/brain.js', 'js/bot/danger.js', 'js/bot/worker.js',
   'fonts/CormorantGaramond-SemiBold.woff2', 'fonts/CormorantGaramond-SemiBoldItalic.woff2', 'fonts/Inter-Variable.woff2',
   'icons/icon.svg', 'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png',
 ];
@@ -19,7 +19,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    fetch(e.request).then((r) => {
+    fetch(e.request, { cache: 'no-cache' }).then((r) => {
       if (r.ok && new URL(e.request.url).origin === location.origin) {
         const copy = r.clone();
         caches.open(VERSION).then((c) => c.put(e.request, copy));

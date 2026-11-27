@@ -3,6 +3,7 @@ import { Round, newMatch, applyResult } from './rules.js';
 import { kindOf, tileName, WIND_NAMES } from './tiles.js';
 import * as UI from './ui.js';
 import * as store from './storage.js';
+import * as Sound from './sound.js';
 import { decide } from './bot/brain.js';
 
 const $ = (id) => document.getElementById(id);
@@ -97,6 +98,8 @@ $('hand').addEventListener('click', (e) => {
   ui.selected = t;
   UI.renderHand(round, ui);
   renderActions();
+  Sound.play('select');
+  Sound.buzz(8);
   onSelect(t);
 });
 
@@ -125,6 +128,8 @@ function freshFromLog(prevLen) {
 
 function announce(ev) {
   for (const e of ev) {
+    if (e.type === 'discard') Sound.play('tile');
+    if (e.type === 'pong' || e.type === 'chi' || e.type === 'kong') { Sound.play('claim'); Sound.buzz(15); }
     const who = UI.PLAYERS[e.seat]?.name;
     if (e.type === 'pong') UI.toast(`${who}: Pong!`);
     if (e.type === 'chi') UI.toast(`${who}: Chi!`);
@@ -170,6 +175,51 @@ async function runLoop() {
   if (token === loopToken) finishRound();
 }
 
+function syncMute() {
+  const b = $('btn-mute');
+  b.classList.toggle('off', !settings.sound);
+  b.setAttribute('aria-label', settings.sound ? 'Matikan suara' : 'Nyalakan suara');
+}
+
+const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Kilau emas + Kecik mengalir dari yang membayar ke pemenang.
+async function celebrate(res) {
+  if (res.type !== 'win') { Sound.play('draw'); await sleep(500); return; }
+  Sound.play('win');
+  Sound.buzz(30);
+  if (reduceMotion()) { await sleep(400); return; }
+  const fx = $('fx');
+  const shine = document.createElement('div');
+  shine.className = 'shine';
+  fx.appendChild(shine);
+  await sleep(450);
+  const target = document.querySelector(`.avatar[data-seat="${res.winner}"]`)?.getBoundingClientRect();
+  if (target) {
+    res.payments.forEach((p, s) => {
+      if (p >= 0) return;
+      const from = document.querySelector(`.avatar[data-seat="${s}"]`)?.getBoundingClientRect();
+      if (!from) return;
+      const n = Math.min(6, 2 + Math.round(-p / 16));
+      for (let i = 0; i < n; i++) {
+        const c = document.createElement('div');
+        c.className = 'fly-chip';
+        c.innerHTML = UI.chipHTML();
+        c.style.left = from.left + from.width / 2 - 13 + (Math.random() * 16 - 8) + 'px';
+        c.style.top = from.top + from.height / 2 - 13 + (Math.random() * 16 - 8) + 'px';
+        fx.appendChild(c);
+        setTimeout(() => {
+          c.style.transform = `translate(${target.left - from.left}px, ${target.top - from.top}px) scale(.8)`;
+          c.style.opacity = '0';
+        }, 40 + i * 70);
+      }
+    });
+    Sound.play('chip');
+  }
+  await sleep(1100);
+  fx.innerHTML = '';
+}
+
 function finishRound() {
   const res = round.result;
   applyResult(match, res);
@@ -186,7 +236,7 @@ function finishRound() {
   stats.maxChips = Math.max(stats.maxChips, match.chips[0]);
   store.save('stats', stats);
   store.save('chips', match.chips[0]);
-  showResult(res);
+  celebrate(res).then(() => showResult(res));
   store.save('game', { match, round: null });
 }
 
@@ -302,6 +352,13 @@ document.addEventListener('click', (e) => {
       <button class="btn gold" data-m="close">Kembali ke meja</button>
       <button class="btn" data-m="quit">Simpan & ke menu</button></div>`);
   }
+  if (a === 'mute') {
+    settings.sound = !settings.sound;
+    store.save('settings', settings);
+    Sound.configure(settings);
+    syncMute();
+    UI.toast(settings.sound ? 'Suara nyala' : 'Suara mati', 800);
+  }
   if (a === 'log') {
     const items = round ? round.log.map(UI.formatLog).filter(Boolean).reverse() : [];
     UI.showModal(`<h2>Riwayat ronde</h2><ul class="log-list">${items.map((i) => `<li>${i}</li>`).join('') || '<li>Belum ada aksi.</li>'}</ul>
@@ -336,6 +393,8 @@ $('modal').addEventListener('click', (e) => {
   if (v === 'true' || v === 'false') v = v === 'true';
   settings[key] = v;
   store.save('settings', settings);
+  Sound.configure(settings);
+  syncMute();
   b.parentElement.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
 });
 
@@ -358,5 +417,8 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('sw.js').catch(() => { /* offline tidak tersedia */ });
 }
 UI.initArt();
+Sound.configure(settings);
+syncMute();
+document.addEventListener('pointerdown', () => Sound.unlock(), { passive: true });
 refreshMenu();
 window.__mj = { get round() { return round; }, get match() { return match; }, WIND_NAMES };

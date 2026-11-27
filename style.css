@@ -316,7 +316,7 @@ button { font: inherit; color: inherit; }
 .help-fan b { color: var(--gold); }
 
 .toast {
-  position: fixed; left: 50%; top: calc(var(--sat) + 58px); transform: translate(-50%, -10px); z-index: 20;
+  position: fixed; left: 50%; top: 36%; transform: translate(-50%, -10px); z-index: 20;
   padding: 10px 18px; border-radius: 22px; background: rgba(8,24,18,.9); border: 1px solid var(--gold-soft);
   color: var(--gold); font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s var(--ease);
   font-family: var(--serif); font-size: 20px; white-space: nowrap;
