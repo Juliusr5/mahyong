@@ -259,10 +259,13 @@ export function rankDiscards(view, cfg, unseen = unseenCounts(view), env = envFo
     if (top.length > 1) {
       monteCarlo(top, c, melds, view, unseen, cfg, env);
       // gabungkan estimasi simulasi dengan estimasi analitik
-      for (const x of top) x.ev = 0.6 * x.mc + 0.4 * x.ev;
+      const wmc = cfg.mcWeight ?? 0.6;
+      for (const x of top) x.ev = wmc * x.mc + (1 - wmc) * x.ev;
     }
   }
-  for (const x of out) x.score = x.ev - defense * x.danger;
+  // push/fold: tangan siap tetap menyerang, tangan jauh lebih cepat bertahan
+  const PF = cfg.pushFold || [1, 1, 1, 1];
+  for (const x of out) x.score = x.ev - defense * PF[Math.min(3, Math.max(0, x.shanten))] * x.danger;
   out.sort((a, b) => b.score - a.score || a.shanten - b.shanten || b.ukeire - a.ukeire);
   return out;
 }

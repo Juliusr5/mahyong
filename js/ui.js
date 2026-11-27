@@ -74,10 +74,12 @@ export function render(r, match, ui) {
     $('river-' + s).classList.toggle('active', r.phase === 'turn' && r.turn === s);
   }
   // tengah
-  const turnName = r.phase === 'end' ? '' : r.phase === 'turn' ? `Giliran ${PLAYERS[r.turn].name}` : 'Menunggu klaim…';
-  $('center').innerHTML = `<div class="wind-disc"><div><span>Putaran</span><br><b>${WIND_CH[r.roundWind]}</b></div></div>
-    <div class="wall-count">Sisa dinding <b>${r.wall.length}</b></div>
-    <div class="turn-arrow">${turnName}</div>`;
+  // buangan terakhir ditampilkan besar di tengah agar mudah dibaca
+  const big = lastD && !lastD.claimed && r.phase !== 'end'
+    ? `<div class="big-discard">${tile(lastD.tile, ui.fresh?.discard === lastD.tile ? 'fresh' : '')}</div>
+       <div class="big-cap"><b>${tileName(kindOf(lastD.tile))}</b><br>dari ${PLAYERS[lastD.seat].name}</div>`
+    : `<div class="wind-disc"><div><span>Putaran</span><br><b>${WIND_CH[r.roundWind]}</b></div></div>`;
+  $('center').innerHTML = big + `<div class="wall-count">${WIND_CH[r.roundWind]} · sisa <b>${r.wall.length}</b></div>`;
   // saya
   const fl0 = r.flowers[0].map((t) => tile(t)).join('');
   $('me-info').innerHTML = `<div class="avatar ${r.phase === 'turn' && r.turn === 0 ? 'turn' : ''}" data-seat="0">${avatarSVG(PLAYERS[0])}</div>
