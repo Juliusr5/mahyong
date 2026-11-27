@@ -11,6 +11,10 @@ export const PLAYERS = [
 const WIND_CH = '東南西北';
 const $ = (id) => document.getElementById(id);
 
+// Saldo Kecik: kapsul gelap bergaris emas dengan koin.
+export const fmt = (n) => Number(n).toLocaleString('id-ID');
+export const purse = (n, cls = '') => `<span class="purse ${cls} ${n < 0 ? 'neg' : ''}" aria-label="${fmt(n)} Kecik"><span class="coin">${chipSVG()}</span><b>${fmt(n)}</b></span>`;
+
 export function initArt() {
   $('sprite').innerHTML = buildSprite();
   document.querySelectorAll('.chip-icon').forEach((e) => (e.innerHTML = chipSVG()));
@@ -41,7 +45,7 @@ function pinfo(r, match, s) {
   const turn = r.phase === 'turn' && r.turn === s;
   return `<div class="pinfo">
     <div class="avatar ${turn ? 'turn' : ''}" data-seat="${s}">${avatarSVG(p)}${badges(r, s)}</div>
-    <div class="names"><div class="pname">${p.name}</div><div class="pchips">${match.chips[s]}</div></div>
+    <div class="names"><div class="pname">${p.name}</div>${purse(match.chips[s])}</div>
   </div>`;
 }
 
@@ -78,7 +82,7 @@ export function render(r, match, ui) {
   const fl0 = r.flowers[0].map((t) => tile(t)).join('');
   $('me-info').innerHTML = `<div class="avatar ${r.phase === 'turn' && r.turn === 0 ? 'turn' : ''}" data-seat="0">${avatarSVG(PLAYERS[0])}</div>
     <span>Angin kursi <b>${WIND_NAMES[r.seatWind(0)]}</b>${r.dealer === 0 ? ' · <b style="color:#f0b0a8">Bandar</b>' : ''}</span>
-    <span class="grow"></span><span class="pchips">${match.chips[0]} chip</span>`;
+    <span class="grow"></span>${purse(match.chips[0], 'lg')}`;
   $('me-melds').innerHTML = r.melds[0].map((m, i) => meldHTML(m, ui.fresh?.meld === `0:${i}`)).join('') +
     (fl0 ? `<div class="flowers" style="--w:16px">${fl0}</div>` : '');
   renderHand(r, ui);

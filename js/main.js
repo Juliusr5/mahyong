@@ -206,10 +206,10 @@ function showResult(res) {
     html += `<div class="fan-total"><span>Total${res.score.limit ? ' (batas maksimal)' : ''}</span><span>${res.score.fan} fan</span></div>`;
   }
   html += `<div class="rule"></div><div class="pay-grid">` + res.payments.map((p, s) =>
-    `<span>${names[s]}</span><span class="${p > 0 ? 'plus' : p < 0 ? 'minus' : 'zero'}">${p > 0 ? '+' : ''}${p}</span><span class="bal">${match.chips[s]}</span>`).join('') + `</div>`;
+    `<span>${names[s]}</span><span class="${p > 0 ? 'plus' : p < 0 ? 'minus' : 'zero'}">${p > 0 ? '+' : ''}${p}</span><span class="bal">${UI.fmt(match.chips[s])}</span>`).join('') + `</div>`;
   if (match.over) {
     const rank = [0, 1, 2, 3].sort((a, b) => match.chips[b] - match.chips[a]);
-    html += `<div class="rule"></div><h3 style="text-align:center">Putaran selesai</h3><ol>${rank.map((s) => `<li>${names[s]} — ${match.chips[s]} chip</li>`).join('')}</ol>`;
+    html += `<div class="rule"></div><h3 style="text-align:center">Putaran selesai</h3><ol>${rank.map((s) => `<li>${names[s]} — ${UI.purse(match.chips[s])}</li>`).join('')}</ol>`;
   }
   html += `<div class="modal-actions">
     <button class="btn" data-m="menu">Menu</button>
@@ -262,13 +262,13 @@ function refreshMenu() {
   const g = store.load('game', null);
   $('btn-continue').hidden = !(g && g.round);
   const chips = store.load('chips', 1000);
-  $('menu-chip-count').textContent = chips;
+  $('menu-chip-count').textContent = UI.fmt(chips);
   $('btn-refill').hidden = chips > 0;
 }
 
 function refillPrompt() {
-  UI.showModal(`<h2>Chip habis</h2><p style="text-align:center">Isi ulang ke 1000 chip mainan? (Gratis — tanpa uang sungguhan.)</p>
-    <div class="modal-actions"><button class="btn" data-m="close">Batal</button><button class="btn gold" data-m="refill">Isi ulang chip</button></div>`);
+  UI.showModal(`<h2>Kecik habis</h2><p style="text-align:center">Isi ulang ke 1.000 Kecik? (Gratis — Kecik hanya mainan, tanpa uang sungguhan.)</p>
+    <div class="modal-actions"><button class="btn" data-m="close">Batal</button><button class="btn gold" data-m="refill">Isi ulang Kecik</button></div>`);
 }
 
 // ---------- Modal & menu ----------
@@ -280,7 +280,7 @@ $('modal').addEventListener('click', (e) => {
   if (m === 'menu') return toMenu();
   if (m === 'next') { UI.closeModal(); return startRound(); }
   if (m === 'newmatch') { UI.closeModal(); return startMatch(); }
-  if (m === 'refill') { store.save('chips', 1000); UI.closeModal(); refreshMenu(); UI.toast('Chip diisi ulang'); }
+  if (m === 'refill') { store.save('chips', 1000); UI.closeModal(); refreshMenu(); UI.toast('Kecik diisi ulang'); }
   if (m === 'quit') { store.save('game', { match, round: round?.phase === 'end' ? null : round?.toJSON() }); toMenu(); }
 });
 
@@ -347,13 +347,16 @@ function showStats() {
       <div class="stat"><b>${stats.rounds}</b><span>Ronde dimainkan</span></div>
       <div class="stat"><b>${rate}%</b><span>Tingkat menang</span></div>
       <div class="stat"><b>${stats.zimo}</b><span>Menang zimo</span></div>
-      <div class="stat"><b>${stats.maxChips}</b><span>Chip tertinggi</span></div>
+      <div class="stat"><b>${stats.maxChips}</b><span>Kecik tertinggi</span></div>
     </div>
     <h3>Tangan terbaik</h3>${best}
     <div class="modal-actions"><button class="btn gold" data-m="close">Tutup</button></div>`);
 }
 
 // ---------- Mulai ----------
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('sw.js').catch(() => { /* offline tidak tersedia */ });
+}
 UI.initArt();
 refreshMenu();
 window.__mj = { get round() { return round; }, get match() { return match; }, WIND_NAMES };
