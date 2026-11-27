@@ -268,11 +268,11 @@ async function celebrate(res) {
   shine.className = 'shine';
   fx.appendChild(shine);
   await sleep(450);
-  const target = document.querySelector(`.avatar[data-seat="${res.winner}"]`)?.getBoundingClientRect();
+  const target = document.querySelector(`[data-seat="${res.winner}"]`)?.getBoundingClientRect();
   if (target) {
     res.payments.forEach((p, s) => {
       if (p >= 0) return;
-      const from = document.querySelector(`.avatar[data-seat="${s}"]`)?.getBoundingClientRect();
+      const from = document.querySelector(`[data-seat="${s}"]`)?.getBoundingClientRect();
       if (!from) return;
       const n = Math.min(6, 2 + Math.round(-p / 16));
       for (let i = 0; i < n; i++) {
@@ -409,6 +409,7 @@ $('modal').addEventListener('click', (e) => {
   if (m === 'tut-skip') return tutorial(TUTORIAL.length);
   if (m === 'tutorial') { settings.tutorialDone = false; store.save('settings', settings); UI.closeModal(); UI.toast('Tutorial muncul saat main berikutnya'); return; }
   if (m === 'refill') { store.save('chips', 1000); UI.closeModal(); refreshMenu(); UI.toast('Kecik diisi ulang'); }
+  if (m === 'reload') { if (round && match) store.save('game', { match, round: round.phase === 'end' ? null : round.toJSON() }); location.reload(); return; }
   if (m === 'quit') { store.save('game', { match, round: round?.phase === 'end' ? null : round?.toJSON() }); toMenu(); }
 });
 
@@ -428,7 +429,8 @@ document.addEventListener('click', (e) => {
   if (a === 'menu') {
     UI.showModal(`<h2>Jeda</h2><div class="modal-actions" style="flex-direction:column">
       <button class="btn gold" data-m="close">Kembali ke meja</button>
-      <button class="btn" data-m="quit">Simpan & ke menu</button></div>`);
+      <button class="btn" data-m="quit">Simpan & ke menu</button>
+      <button class="btn" data-m="reload">Muat ulang game (cek versi baru)</button></div>`);
   }
   if (a === 'mute') {
     settings.sound = !settings.sound;
@@ -495,7 +497,18 @@ function showStats() {
 
 // ---------- Mulai ----------
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  navigator.serviceWorker.register('sw.js').catch(() => { /* offline tidak tersedia */ });
+  // Cek versi baru tiap kali game dibuka / kembali ke layar; muat ulang otomatis kalau ada.
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((reg) => {
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
+  }).catch(() => { /* offline tidak tersedia */ });
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || reloading) return;
+    reloading = true;
+    if (round && round.phase !== 'end' && match) persist();
+    location.reload();
+  });
 }
 UI.initArt();
 document.body.classList.add('big');

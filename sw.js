@@ -1,6 +1,6 @@
 // Service worker: simpan semua file agar game bisa dimainkan offline.
 // Naikkan VERSION setiap kali file berubah agar HP mengambil versi baru.
-const VERSION = 'mjz-v9';
+const VERSION = 'mjz-v10';
 const FILES = [
   './', 'index.html', 'style.css', 'manifest.json',
   'js/main.js', 'js/ui.js', 'js/art.js', 'js/tiles.js', 'js/hand.js', 'js/rules.js', 'js/scoring.js',

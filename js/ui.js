@@ -43,9 +43,10 @@ function badges(r, s) {
 function pinfo(r, match, s) {
   const p = PLAYERS[s];
   const turn = r.phase === 'turn' && r.turn === s;
-  return `<div class="pinfo">
-    <div class="avatar ${turn ? 'turn' : ''}" data-seat="${s}">${avatarSVG(p)}${badges(r, s)}</div>
-    <div class="names"><div class="pname">${p.name}</div>${purse(match.chips[s])}</div>
+  // tanpa avatar: nama saja, plus angin kursi, tanda bandar, dan saldo Kecik
+  const dealer = s === r.dealer ? '<span class="odealer" title="Bandar">庄</span>' : '';
+  return `<div class="oname ${turn ? 'turn' : ''}" data-seat="${s}">
+    <b>${p.name}</b><span class="owind" title="Angin kursi ${WIND_NAMES[r.seatWind(s)]}">${WIND_CH[r.seatWind(s)]}</span>${dealer}<span class="okecik">${fmt(match.chips[s])}</span>
   </div>`;
 }
 
@@ -53,23 +54,24 @@ export function render(r, match, ui) {
   // info atas
   $('round-info').innerHTML = `<b>Putaran ${WIND_NAMES[r.roundWind]}</b><br>Ronde ${match.handNo} · ${levelName(ui.level)}`;
   // lawan
+  // lawan: info ringkas di sisinya; set terbukanya ditaruh di meja
   for (const s of [1, 2, 3]) {
-    const melds = r.melds[s].map((m, i) => meldHTML(m, ui.fresh?.meld === `${s}:${i}`)).join('');
-    const fl = r.flowers[s].map((t) => tile(t)).join('');
-    const side = s !== 2;
-    const backs = `<div class="backs" title="${r.hands[s].length} kartu">${r.hands[s].map(() => side ? `<span class="rot">${back()}</span>` : back()).join('')}</div>`;
-    $('opp-' + s).innerHTML = pinfo(r, match, s) + backs +
-      (fl ? `<div class="flowers">${fl}</div>` : '') +
-      `<div class="omelds">${melds}</div>`;
+    const fl = r.flowers[s].length ? `<div class="pcount">${r.flowers[s].length} bunga</div>` : '';
+    const backs = s === 2 ? `<div class="backs" title="${r.hands[s].length} kartu">${r.hands[s].map(() => back()).join('')}</div>` : '';
+    $('opp-' + s).innerHTML = pinfo(r, match, s) + backs + (s === 2 ? fl : '');
   }
-  // sungai buangan
+  // meja: set terbuka lalu buangan, semua kartu tegak agar mudah dibaca
   const lastD = r.discardLog.at(-1);
   for (let s = 0; s < 4; s++) {
-    $('river-' + s).innerHTML = r.discards[s].map((t) => {
+    const melds = s === 0 ? '' : r.melds[s].map((m, i) => {
+      const fr = ui.fresh?.meld === `${s}:${i}` ? 'flip' : '';
+      const ks = m.concealed ? [-1, m.kind, m.kind, -1] : m.tiles.map(kindOf);
+      return `<span class="rmeld">${ks.map((k) => (k < 0 ? back(fr) : tileK(k, fr))).join('')}</span>`;
+    }).join('');
+    $('river-' + s).innerHTML = melds + r.discards[s].map((t) => {
       let cls = '';
       if (lastD && !lastD.claimed && lastD.tile === t) cls = 'last-discard' + (ui.fresh?.discard === t ? ' fresh' : '');
-      const h = tile(t, cls);
-      return s === 1 || s === 3 ? `<span class="rot">${h}</span>` : h;
+      return tile(t, cls);
     }).join('');
     $('river-' + s).classList.toggle('active', r.phase === 'turn' && r.turn === s);
   }

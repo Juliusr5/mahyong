@@ -406,3 +406,49 @@ body.big .pname { font-size: 12px; }
 @media (orientation: landscape) and (max-height: 520px) {
   .rotate { display: flex; }
 }
+
+/* ===== Meja besar v4: kolom samping ramping, meja mengisi tinggi layar, kartu tegak ===== */
+.table { grid-template-columns: 48px 1fr 48px; gap: 2px; }
+.opp-left, .opp-right { justify-content: center; gap: 3px; }
+.opp-left .pinfo, .opp-right .pinfo { gap: 2px; }
+.opp-left .avatar, .opp-right .avatar { width: 36px; height: 36px; }
+.opp-left .pname, .opp-right .pname { max-width: 48px; font-size: 10.5px; }
+.opp-left .purse, .opp-right .purse { padding: 1px 4px 1px 1px; gap: 2px; }
+.opp-left .purse .coin, .opp-right .purse .coin { width: 11px; height: 11px; }
+.opp-left .purse b, .opp-right .purse b { font-size: 10px; }
+.pcount { font-size: 10.5px; color: var(--muted); text-align: center; white-space: nowrap; }
+.opp-top { gap: 8px; padding: 0 0 2px; }
+.mid { place-items: stretch; }
+.board {
+  --rw: min(calc(100cqw / 12.6), calc(100cqh / 15.5));
+  --s: min(100cqw, 100cqh);
+  --bx: calc(var(--rw) * 3 + 8px);
+  --by: calc(var(--rw) * 1.52 * 3 + 6px);
+  width: 100%; height: 100%;
+  grid-template-columns: var(--bx) 1fr var(--bx);
+  grid-template-rows: var(--by) 1fr var(--by);
+  padding: 4px; gap: 3px;
+}
+.river { --w: var(--rw); gap: 1px; align-content: flex-start; }
+.river .tile { margin-bottom: calc(var(--rw) * .14); }
+.river-left, .river-right { flex-direction: row; flex-wrap: wrap; }
+.river-bottom { flex-wrap: wrap-reverse; }
+.rmeld { display: inline-flex; flex: none; padding: 1px; margin: 0 3px 1px 0; border-radius: 4px; background: rgba(220,192,138,.32); }
+.rmeld .tile { margin-bottom: calc(var(--rw) * .14); }
+.big-discard { --w: calc(var(--rw) * 1.9); }
+.wind-disc { width: calc(var(--rw) * 2.4); height: calc(var(--rw) * 2.4); }
+.river-left .rmeld, .river-right .rmeld { flex-wrap: wrap; margin-right: 0; max-width: 100%; }
+
+/* ===== Bot tanpa avatar: nama saja ===== */
+.table { grid-template-columns: 26px 1fr 26px; }
+.oname { display: flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 13px; color: var(--text);
+  padding: 3px 10px; border-radius: 999px; border: 1px solid rgba(220,192,138,.25); background: rgba(0,0,0,.22); transition: box-shadow .3s, border-color .3s; }
+.oname b { font-weight: 700; letter-spacing: .01em; }
+.oname.turn { border-color: var(--gold); box-shadow: 0 0 12px rgba(220,192,138,.55); }
+.owind { font-family: var(--serif); color: var(--gold); font-weight: 600; font-size: 14px; }
+.odealer { background: var(--red); color: #fff; border-radius: 6px; padding: 0 4px; font-size: 11px; line-height: 16px; }
+.okecik { color: #f6dfa6; font-weight: 700; font-variant-numeric: tabular-nums; }
+.okecik::before { content: '● '; color: #b3342b; font-size: 10px; }
+.opp-left, .opp-right { padding: 0; align-items: center; justify-content: center; }
+.opp-left .oname, .opp-right .oname { writing-mode: vertical-rl; padding: 10px 3px; font-size: 12.5px; }
+.opp-top { padding: 2px 0 4px; }
