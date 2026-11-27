@@ -401,28 +401,3 @@ body.big .actions .btn { min-height: 52px; font-size: 18px; min-width: 88px; }
 body.big .hint-bar { font-size: 14px; }
 body.big .round-info { font-size: 14px; }
 body.big .pname { font-size: 12px; }
-
-/* ===== Tata letak v3: bot di baris atas, meja selebar layar ===== */
-.table { grid-template-columns: 1fr; grid-template-rows: auto 1fr; grid-template-areas: 'opps' 'mid'; gap: 4px; }
-.opps { grid-area: opps; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-.opps .opp {
-  flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  padding: 4px 2px; border-radius: 12px; min-width: 0;
-  background: rgba(0,0,0,.16); border: 1px solid rgba(220,192,138,.14);
-}
-.opps .pinfo { flex-direction: row; gap: 5px; align-items: center; }
-.opps .names { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
-.opps .avatar { width: 34px; height: 34px; }
-.opps .pname { max-width: 72px; font-size: 12px; text-align: left; }
-.opps .purse { padding: 1px 6px 1px 1px; gap: 3px; }
-.opps .purse .coin { width: 13px; height: 13px; }
-.opps .purse b { font-size: 11.5px; }
-.opps .pcount { font-size: 10.5px; color: var(--muted); white-space: nowrap; }
-.mid { grid-area: mid; }
-.board { --rw: calc(var(--s) / 16); --band: calc(var(--rw) * 4.55); }
-/* set terbuka lawan di meja */
-.rmeld { display: inline-flex; flex: none; padding: 1px; margin: 0 3px 2px 0; border-radius: 4px; background: rgba(220,192,138,.28); }
-.river-left .rmeld, .river-right .rmeld { flex-direction: column; margin: 0 2px 3px 0; }
-.rmeld .tile { margin-bottom: 1px; }
-.river-left, .river-right { flex-direction: row; flex-wrap: wrap; align-content: flex-start; }
-.river-left .rmeld, .river-right .rmeld { flex-direction: row; margin: 0 3px 2px 0; }
