@@ -525,3 +525,7 @@ html, body { background: radial-gradient(ellipse at 50% 50%, var(--felt) 0%, var
 .opp-left .stand b, .opp-right .stand b { margin: 3px 0 0; }
 .opp-right .stand b { order: -1; margin: 0 0 3px; }
 .opp-top .backs { display: none; }
+
+/* jarak antar baris ikut ukuran kartu (agar penyusutan otomatis efektif) */
+.river .tile, .rmeld .tile { margin-bottom: calc(var(--w) * .14); }
+.river { position: relative; } /* acuan offsetTop/Left untuk penyusutan otomatis */

@@ -94,6 +94,29 @@ export function render(r, match, ui) {
   renderHand(r, ui);
 }
 
+// Kalau buangan terlalu banyak untuk areanya, kecilkan kartu di area itu saja sampai muat.
+export function fitRivers() { for (let s = 0; s < 4; s++) fitRiver($('river-' + s)); }
+if (typeof window !== 'undefined') window.addEventListener('resize', () => fitRivers());
+
+function fitRiver(el) {
+  const tiles = [...el.querySelectorAll('.tile')];
+  tiles.forEach((t) => t.style.removeProperty('--w'));
+  if (!tiles.length) return;
+  // Hitung langsung ukuran kartu terbesar yang muat (tanpa mengukur ulang tata letak berulang kali).
+  const base = parseFloat(getComputedStyle(el).getPropertyValue('--w')) || 20;
+  const W = el.clientWidth, H = el.clientHeight;
+  const melds = el.querySelectorAll('.rmeld').length;
+  const units = tiles.length + melds * 0.6; // set terbuka punya bingkai & jarak tambahan
+  const fits = (w) => {
+    const cols = Math.max(1, Math.floor((W + 1) / (w + 1)));
+    const rows = Math.ceil(units / cols) + (melds ? 1 : 0); // cadangan satu baris untuk set yang tidak terpotong
+    return rows * (w * 1.36 + w * 0.14 + 2) <= H;
+  };
+  let w = base;
+  while (w > 11 && !fits(w)) w -= 0.5;
+  if (w < base) tiles.forEach((t) => t.style.setProperty('--w', w + 'px'));
+}
+
 export function renderHand(r, ui) {
   const hand = r.hands[0];
   const drawn = r.phase === 'turn' && r.turn === 0 && r.drawn !== null && hand.includes(r.drawn) ? r.drawn : null;
@@ -109,6 +132,7 @@ export function renderHand(r, ui) {
     return `<button class="${cls.join(' ')}" data-tile="${t}" ${canPick ? '' : 'aria-disabled="true"'} aria-label="${tileName(kindOf(t))}">` +
       tile(t, tc).replace('<div class="tile', `<div${style} class="tile`) + '</button>';
   }).join('');
+  fitRivers(); // ukur setelah tangan tergambar (tinggi meja bisa berubah)
 }
 
 export function setActions(html) { $('actions').innerHTML = html; }
