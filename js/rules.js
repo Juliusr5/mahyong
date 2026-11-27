@@ -289,6 +289,19 @@ export class Round {
     this.log.push({ type: 'exhausted' });
   }
 
+  // Simpan/muat untuk "Lanjutkan permainan".
+  toJSON() {
+    const o = { ...this, _opts: null };
+    if (this.claim) o.claim = { ...this.claim, opts: [...this.claim.opts], responses: [...this.claim.responses] };
+    return o;
+  }
+
+  static fromJSON(o) {
+    const r = Object.assign(new Round({ wall: [] }), o);
+    if (o.claim) r.claim = { ...o.claim, opts: new Map(o.claim.opts), responses: new Map(o.claim.responses) };
+    return r;
+  }
+
   // Data yang boleh dilihat pemain `seat` (tanpa tangan lawan dan urutan dinding).
   viewFor(seat) {
     return {
