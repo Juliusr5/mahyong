@@ -386,15 +386,8 @@ button { font: inherit; color: inherit; }
 .big-cap b { color: var(--text); font-size: 13px; }
 
 /* ===== Mode kartu besar (bawaan): tangan 2 baris ===== */
-body.big .hand {
-  flex-wrap: wrap; align-content: flex-end; row-gap: 2px;
-  --w: min(calc((100vw - var(--sal) - var(--sar) - 24px) / 7.4), 60px);
-  max-width: calc(var(--w) * 7.4 + 12px); margin: 0 auto; min-height: 0;
-}
-body.big .htile { padding: 6px 0 2px; margin: 0 1px; }
-body.big .htile.sel { transform: translateY(-8px); }
-body.big .htile.drawn { margin-left: 1px; }
-body.big .htile.drawn .tile { box-shadow: 0 0 0 2px rgba(220,192,138,.8), 0 calc(var(--w) * .13) 0 #2f8a66, 0 6px 12px rgba(0,0,0,.4); }
+body.big .hand { --w: min(calc((100vw - var(--sal) - var(--sar) - 14px) / 14.4), 46px); }
+body.big .htile { margin: 0 .5px; }
 body.big .me-melds { --w: 26px; }
 body.big .me-info { font-size: 14px; }
 body.big .actions .btn { min-height: 52px; font-size: 18px; min-width: 88px; }

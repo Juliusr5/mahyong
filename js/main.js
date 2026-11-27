@@ -446,7 +446,6 @@ function seg(key, opts) {
 
 function showSettings() {
   UI.showModal(`<h2>Pengaturan</h2>
-    <div class="field"><span>Ukuran kartu</span>${seg('big', [[true, 'Besar'], [false, 'Normal']])}</div>
     <div class="field"><span>Kesulitan</span>${seg('level', [['mudah', 'Mudah'], ['sedang', 'Sedang'], ['sulit', 'Sulit']])}</div>
     <div class="field"><span>Panjang</span>${seg('length', [['east', '1 putaran'], ['endless', 'Terus']])}</div>
     <div class="field"><span>Kecepatan bot</span>${seg('speed', [['lambat', 'Lambat'], ['normal', 'Normal'], ['cepat', 'Cepat']])}</div>
@@ -467,7 +466,7 @@ $('modal').addEventListener('click', (e) => {
   store.save('settings', settings);
   Sound.configure(settings);
   syncMute();
-  document.body.classList.toggle('big', settings.big);
+  document.body.classList.add('big');
   b.parentElement.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
 });
 
@@ -492,7 +491,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('sw.js').catch(() => { /* offline tidak tersedia */ });
 }
 UI.initArt();
-document.body.classList.toggle('big', settings.big);
+document.body.classList.add('big');
 Sound.configure(settings);
 syncMute();
 document.addEventListener('pointerdown', () => Sound.unlock(), { passive: true });
