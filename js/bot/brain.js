@@ -285,7 +285,7 @@ export function rankDiscards(view, cfg, unseen = unseenCounts(view), env = envFo
     c[k]--;
     const h = handEV(c, melds, view, unseen, cfg, env);
     c[k]++;
-    out.push({ kind: k, ev: h.ev, shanten: h.shanten, plan: h.plan, ukeire: h.ukeire, fn: h.fn, danger: env.danger[k], score: 0 });
+    out.push({ kind: k, ev: h.ev, shanten: h.shanten, plan: h.plan, ukeire: h.ukeire, fn: h.fn, danger: env.danger[k], exact: env.exact[k], block: env.block[k], score: 0 });
   }
   if (cfg.mc && out.length > 1) {
     out.sort((a, b) => b.ev - a.ev);
@@ -299,7 +299,13 @@ export function rankDiscards(view, cfg, unseen = unseenCounts(view), env = envFo
   }
   // push/fold: tangan siap tetap menyerang, tangan jauh lebih cepat bertahan
   const PF = cfg.pushFold || [1, 1, 1, 1];
-  for (const x of out) x.score = x.ev - defense * PF[Math.min(3, Math.max(0, x.shanten))] * x.danger;
+  // info pasti dari intipan: bobot sendiri, juga push/fold terhadap tangan sendiri
+  const XPF = cfg.peekPF || [0.6, 1, 1.2, 1.4];
+  const peekW = cfg.peekW ?? 1, blockW = cfg.blockW ?? 0;
+  for (const x of out) {
+    const i = Math.min(3, Math.max(0, x.shanten));
+    x.score = x.ev - defense * PF[i] * x.danger - peekW * XPF[i] * x.exact - blockW * x.block;
+  }
   out.sort((a, b) => b.score - a.score || a.shanten - b.shanten || b.ukeire - a.ukeire);
   return out;
 }
@@ -351,7 +357,10 @@ function claimDecision(view, req, cfg) {
   const opts = [];
   const evAfter = (v2) => {
     const r = rankDiscards({ ...v2, wallCount: Math.max(0, v2.wallCount) }, { ...cfg, mc: false }, unseen, env);
-    return r.length ? r[0].ev - cfg.claimDanger * cfg.defense * (cfg.styleDefense ?? 1) * r[0].danger : 0;
+    if (!r.length) return 0;
+    // pakai buangan terbaik yang tidak pasti menembak lawan yang diintip; penalti intipan tidak ikut menimbang klaim
+    const x = r.filter((y) => !y.exact).sort((p, q) => (q.ev - cfg.defense * q.danger) - (p.ev - cfg.defense * p.danger))[0] || r[0];
+    return x.ev - cfg.claimDanger * cfg.defense * (cfg.styleDefense ?? 1) * x.danger;
   };
   if (o.pong) opts.push({ a: { type: 'pong' }, ev: evAfter(withMeld(view, [k, k], { type: 'pong', kind: k, concealed: false, tiles: [] })) });
   if (o.kong) {

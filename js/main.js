@@ -443,6 +443,7 @@ $('modal').addEventListener('click', (e) => {
   if (m === 'tutorial') { settings.tutorialDone = false; store.save('settings', settings); UI.closeModal(); UI.toast('Tutorial muncul saat main berikutnya'); return; }
   if (m === 'refill') { store.save('chips', 1000); UI.closeModal(); refreshMenu(); UI.toast('Kecik diisi ulang'); }
   if (m === 'voicetest') { Sound.unlock(); Sound.say('Tiga bambu. Pak Agus pong!'); return; }
+  if (m === 'log') return showLog();
   if (m === 'reload') { if (round && match) store.save('game', { match, round: round.phase === 'end' ? null : round.toJSON() }); location.reload(); return; }
   if (m === 'quit') { store.save('game', { match, round: round?.phase === 'end' ? null : round?.toJSON() }); toMenu(); }
 });
@@ -464,6 +465,7 @@ document.addEventListener('click', (e) => {
     UI.showModal(`<h2>Jeda</h2><div class="modal-actions" style="flex-direction:column">
       <button class="btn gold" data-m="close">Kembali ke meja</button>
       <button class="btn" data-m="quit">Simpan & ke menu</button>
+      <button class="btn" data-m="log">Riwayat ronde</button>
       <button class="btn" data-m="reload">Muat ulang game (cek versi baru)</button></div>`);
   }
   if (a === 'mute') {
@@ -473,11 +475,7 @@ document.addEventListener('click', (e) => {
     syncMute();
     UI.toast(settings.sound ? 'Suara nyala' : 'Suara mati', 800);
   }
-  if (a === 'log') {
-    const items = round ? round.log.map(UI.formatLog).filter(Boolean).reverse() : [];
-    UI.showModal(`<h2>Riwayat ronde</h2><ul class="log-list">${items.map((i) => `<li>${i}</li>`).join('') || '<li>Belum ada aksi.</li>'}</ul>
-      <div class="modal-actions"><button class="btn" data-m="close">Tutup</button></div>`);
-  }
+  if (a === 'log') showLog();
   if (a === 'settings') showSettings();
   if (a === 'stats') showStats();
   if (a === 'help') UI.showModal(helpHTML(UI.tileK));
@@ -485,6 +483,12 @@ document.addEventListener('click', (e) => {
 
 function seg(key, opts) {
   return `<div class="seg" data-key="${key}">${opts.map(([v, l]) => `<button data-v="${v}" class="${String(settings[key]) === String(v) ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+}
+
+function showLog() {
+  const items = round ? round.log.map(UI.formatLog).filter(Boolean).reverse() : [];
+  UI.showModal(`<h2>Riwayat ronde</h2><ul class="log-list">${items.map((i) => `<li>${i}</li>`).join('') || '<li>Belum ada aksi.</li>'}</ul>
+    <div class="modal-actions"><button class="btn" data-m="close">Tutup</button></div>`);
 }
 
 function showSettings() {

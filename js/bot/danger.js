@@ -2,7 +2,7 @@
 // Hanya memakai data publik dari view.
 import { kindOf, isSuited, suitOf, isDragon } from '../tiles.js';
 import { basePay, scoreHand, MIN_FAN } from '../scoring.js';
-import { shanten } from '../hand.js';
+import { shanten, shantenStd } from '../hand.js';
 
 const PROG = [0.02, 0.02, 0.03, 0.04, 0.06, 0.09, 0.12, 0.16, 0.21, 0.27, 0.33, 0.4, 0.46, 0.52, 0.57, 0.62];
 
@@ -64,39 +64,70 @@ export function readOpponent(view, o, unseen) {
   return { tenpai, pk, loss, flush, fan };
 }
 
-// Lawan yang tangannya diintip: bahaya dihitung tepat (kartu tunggu sebenarnya beserta tai-nya).
+// Lawan yang tangannya diintip: kartu tunggu & kebutuhan klaimnya diketahui pasti.
+// exact[k] = Kecik ekstra yang hilang kalau membuang k (pembuang bayar 2x, bukan 1x).
+// block[k] = seberapa besar membuang k membantu lawan lewat pong/chi (dalam langkah shanten).
 function exactOpponent(view, o) {
   const hand = view.peek[o].map(kindOf);
   const melds = view.melds[o];
+  const nM = melds.length;
   const c = new Array(34).fill(0);
   hand.forEach((k) => { if (k < 34) c[k]++; });
-  const pk = new Array(34).fill(0);
-  let loss = 0;
-  if (shanten(c, melds.length) === 0) {
+  const exact = new Array(34).fill(0);
+  const block = new Array(34).fill(0);
+  const s = shanten(c, nM);
+  if (s === 0) {
     const seatWind = (o - view.dealer + 4) % 4;
     for (let k = 0; k < 34; k++) {
       if (c[k] >= 4) continue;
       c[k]++;
-      if (shanten(c, melds.length) === -1) {
+      if (shanten(c, nM) === -1) {
         const kinds = [];
         for (let j = 0; j < 34; j++) for (let n = 0; n < c[j]; n++) kinds.push(j);
         const sc = scoreHand({ kinds, melds, selfDrawn: false, seatWind, roundWind: view.roundWind, flowers: view.flowers[o].map(kindOf) });
-        if (sc && sc.fan >= MIN_FAN) { pk[k] = 1; loss = Math.max(loss, 2 * basePay(sc.fan)); }
+        if (sc && sc.fan >= MIN_FAN) exact[k] = basePay(sc.fan);
       }
       c[k]--;
     }
   }
-  return { tenpai: loss ? 1 : 0, pk, loss, flush: -1, fan: 0 };
+  if (s >= 0) {
+    const canChi = o === (view.seat + 1) % 4;
+    for (let k = 0; k < 34; k++) {
+      let best = s;
+      if (c[k] >= 2) { c[k] -= 2; best = Math.min(best, shantenStd(c, nM + 1)); c[k] += 2; }
+      if (canChi && k < 27) {
+        for (let st = k - 2; st <= k; st++) {
+          if (st < 0 || Math.floor(st / 9) !== Math.floor(k / 9) || st % 9 > 6) continue;
+          const need = [st, st + 1, st + 2].filter((x) => x !== k);
+          if (need.every((x) => c[x] > 0)) {
+            need.forEach((x) => c[x]--);
+            best = Math.min(best, shantenStd(c, nM + 1));
+            need.forEach((x) => c[x]++);
+          }
+        }
+      }
+      if (best < s) block[k] = (s - best) * (best === 0 ? 2 : 1);
+    }
+  }
+  return { tenpai: exact.some((x) => x > 0) ? 1 : 0, exact, block, pk: new Array(34).fill(0), loss: 0 };
 }
 
 export function dangerMap(view, unseen) {
-  const d = new Array(34).fill(0);
+  const danger = new Array(34).fill(0);
+  const exact = new Array(34).fill(0);
+  const block = new Array(34).fill(0);
   const opps = [];
   for (let i = 1; i < 4; i++) {
     const o = (view.seat + i) % 4;
-    const r = view.peek && view.peek[o] ? exactOpponent(view, o) : readOpponent(view, o, unseen);
-    opps.push(r);
-    for (let k = 0; k < 34; k++) d[k] += r.tenpai * r.pk[k] * r.loss;
+    if (view.peek && view.peek[o]) {
+      const r = exactOpponent(view, o);
+      opps.push(r);
+      for (let k = 0; k < 34; k++) { exact[k] += r.exact[k]; block[k] += r.block[k]; }
+    } else {
+      const r = readOpponent(view, o, unseen);
+      opps.push(r);
+      for (let k = 0; k < 34; k++) danger[k] += r.tenpai * r.pk[k] * r.loss;
+    }
   }
-  return { danger: d, opps };
+  return { danger, exact, block, opps };
 }

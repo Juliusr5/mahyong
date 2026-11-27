@@ -1,4 +1,4 @@
-# Mahjong Zamrud
+# Mahjong Alung
 
 Mahjong 13 kartu **gaya Singapura** untuk iPhone (dan browser lain): kamu melawan 3 bot — **Pak Agus** (agresif), **Pak Wawan** (seimbang), dan **Pak Roti** (hati-hati). HTML/CSS/JavaScript biasa, tanpa framework dan tanpa build step. Saldo memakai **Kecik**, mata uang mainan tanpa uang sungguhan.
 
