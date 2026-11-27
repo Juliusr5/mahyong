@@ -13,11 +13,11 @@ export const UNIT = 'tai';
 // Nilai tai tiap pola, juga dipakai halaman Bantuan.
 export const FAN = {
   chicken: ['Chicken Hand (tanpa tai)', 0],
-  pingHu: ['Ping Hu (semua chi, tanpa bunga)', 4],
-  allChi: ['Semua chi', 1],
-  allPong: ['Semua bong', 2],
-  mixed: ['Campur satu jenis', 2],
-  pure: ['Satu jenis murni', 4],
+  pingHu: ['Ping Hu (semua ciak, tanpa bunga)', 4],
+  allChi: ['Semua ciak', 1],
+  allPong: ['Tui tui hu (semua bong)', 2],
+  mixed: ['Hun it sik (campur satu jenis)', 2],
+  pure: ['Ceng it sik (satu jenis murni)', 4],
   dragon: ['Bong naga', 1],
   seatWind: ['Bong angin kursi', 1],
   roundWind: ['Bong angin putaran', 1],

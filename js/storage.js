@@ -21,7 +21,7 @@ export function remove(key) {
 }
 
 export const DEFAULT_SETTINGS = {
-  level: 'sedang', length: 'east', speed: 'normal', sound: true, haptics: true, hints: false, tutorialDone: false, big: true, voice: true,
+  level: 'sedang', length: 'east', speed: 'normal', sound: true, haptics: true, hints: false, tutorialDone: false, big: true, voice: true, luck: 0.5,
 };
 export const DEFAULT_STATS = { rounds: 0, wins: 0, zimo: 0, dealtIn: 0, best: null, maxChips: 1000 };
 

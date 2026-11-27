@@ -529,3 +529,17 @@ html, body { background: radial-gradient(ellipse at 50% 50%, var(--felt) 0%, var
 /* jarak antar baris ikut ukuran kartu (agar penyusutan otomatis efektif) */
 .river .tile, .rmeld .tile { margin-bottom: calc(var(--w) * .14); }
 .river { position: relative; } /* acuan offsetTop/Left untuk penyusutan otomatis */
+
+/* ===== Penanda aksi penting ===== */
+.actions.alert { border-radius: 16px; box-shadow: 0 0 0 2px rgba(240,208,138,.7), 0 0 22px rgba(240,208,138,.45); animation: alertPulse 1.2s ease-in-out infinite; padding: 4px; }
+@keyframes alertPulse { 50% { box-shadow: 0 0 0 2px rgba(240,208,138,.35), 0 0 8px rgba(240,208,138,.2); } }
+.btn.hu-big { min-height: 60px; min-width: 120px; font-size: 24px; font-weight: 800; letter-spacing: .04em; animation: huPulse .9s ease-in-out infinite; }
+@keyframes huPulse { 50% { transform: scale(1.07); box-shadow: 0 0 26px rgba(236,211,159,.9); } }
+.hu-flash { position: fixed; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 6px #f0d08a, inset 0 0 80px rgba(240,208,138,.6); animation: huFlash 1.6s ease-out forwards; }
+@keyframes huFlash { 0%, 40% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ===== Tangan lawan di layar hasil ===== */
+.reveal { margin: 6px 0 8px; }
+.reveal-name { font-size: 13px; font-weight: 700; color: var(--gold); margin-bottom: 3px; }
+.reveal-tiles { display: flex; flex-wrap: wrap; gap: 4px; --w: 19px; }
+.reveal-tiles .tile { margin-bottom: 3px; }

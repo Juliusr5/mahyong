@@ -20,9 +20,9 @@ const EX = {
   orphans: '19b 19p 19m 12345677z',
 };
 const NOTE = {
-  chicken: 'Tangan lengkap campuran chi & bong tanpa pola bernilai. Boleh menang, bayaran paling kecil.',
-  pingHu: 'Keempat set chi, tanpa bunga/musim sama sekali, pasangan bukan naga atau angin bernilai.',
-  allChi: 'Keempat set berupa urutan (chi), tapi ada bunga atau pasangan bernilai.',
+  chicken: 'Tangan lengkap campuran ciak & bong tanpa pola bernilai. Boleh menang, bayaran paling kecil.',
+  pingHu: 'Keempat set ciak, tanpa bunga/musim sama sekali, pasangan bukan naga atau angin bernilai.',
+  allChi: 'Keempat set berupa urutan (ciak), tapi ada bunga atau pasangan bernilai.',
   allPong: 'Keempat set berupa bong/kong.',
   mixed: 'Satu jenis angka saja ditambah kartu kehormatan.',
   pure: 'Seluruh tangan satu jenis angka, tanpa kehormatan.',
@@ -63,14 +63,14 @@ export function helpHTML(tileK) {
   <h3>Giliran</h3>
   <p>Tiap pemain memegang 13 kartu (bandar 14). Pada giliranmu: ambil 1 kartu, lalu buang 1. Ketuk kartu sekali untuk memilih, ketuk lagi atau tekan <b>Buang</b> untuk membuang. Bunga/musim langsung dibuka dan diganti otomatis.</p>
   <h3>Mengambil buangan</h3>
-  <p><b>Bong</b> (3 kembar) dan <b>Kong</b> (4 kembar) dari pemain mana saja. <b>Chi</b> (urutan 3 kartu sejenis) hanya dari pemain di kirimu. <b>Hu</b> dari siapa saja. Prioritas: Hu &gt; Bong/Kong &gt; Chi. Tombol hanya muncul kalau aksinya sah.</p>
+  <p><b>Bong</b> (3 kembar) dan <b>Kong</b> (4 kembar) dari pemain mana saja. <b>Ciak</b> (urutan 3 kartu sejenis) hanya dari pemain di kirimu. <b>Hu</b> dari siapa saja. Prioritas: Hu &gt; Bong/Kong &gt; Ciak. Menang dengan ambil sendiri disebut <b>Cu mo</b>. Tombol hanya muncul kalau aksinya sah.</p>
   <h3>Cara menang</h3>
-  <p>4 set + 1 pasang (atau Thirteen Orphans). Menang boleh dari buangan pemain mana saja. Tangan lengkap tanpa tai sama sekali tetap boleh Hu sebagai <b>Chicken Hand</b>, dibayar paling kecil (dasar ${PAY_TABLE[0]} Kecik). Makin banyak tai, makin besar bayarannya — contoh tai termudah: semua chi, bong naga, bong angin kursi/putaran, atau bunga sesuai kursi. Seven Pairs tidak berlaku di gaya Singapura.</p>
+  <p>4 set + 1 pasang (atau Thirteen Orphans). Menang boleh dari buangan pemain mana saja. Tangan lengkap tanpa tai sama sekali tetap boleh Hu sebagai <b>Chicken Hand</b>, dibayar paling kecil (dasar ${PAY_TABLE[0]} Kecik). Makin banyak tai, makin besar bayarannya — contoh tai termudah: semua ciak, bong naga, bong angin kursi/putaran, atau bunga sesuai kursi. Seven Pairs tidak berlaku di gaya Singapura.</p>
   ${ex('123b 456p 789m 555z 11m')}
   <h3>Cara bayar</h3>
   <p>Nilai dasar menurut tai (maksimal ${MAX_FAN} tai):</p>
   <ul class="fan-list">${pay}</ul>
-  <p>Menang dari buangan: pembuang membayar <b>2×</b> nilai dasar, dua pemain lain masing-masing <b>1×</b>. Zimo: ketiga lawan masing-masing membayar <b>2×</b>. Seri (dinding habis): tidak ada yang membayar. Bandar tetap bandar kalau menang atau seri.</p>
+  <p>Menang dari buangan: pembuang membayar <b>2×</b> nilai dasar, dua pemain lain masing-masing <b>1×</b>. Cu mo (ambil sendiri): ketiga lawan masing-masing membayar <b>2×</b>. Seri (dinding habis): tidak ada yang membayar. Bandar tetap bandar kalau menang atau seri.</p>
   <p style="color:var(--muted)">Kecik hanya mainan — tanpa uang sungguhan.</p>
   <h3>Suara bahasa Indonesia di iPhone</h3>
   <p>Kalau suara pengumuman terdengar kaku atau berlogat Inggris, pasang suara Indonesia: buka <b>Pengaturan iPhone → Aksesibilitas → Konten Lisan → Suara → Bahasa Indonesia</b>, lalu unduh <b>Damayanti (Ditingkatkan)</b>. Tutup lalu buka lagi game ini. Pastikan tombol senyap di samping iPhone tidak aktif.</p>
@@ -82,7 +82,7 @@ export function helpHTML(tileK) {
 export const TUTORIAL = [
   { pos: 'top', sel: '#hand', title: 'Kartumu', text: 'Ini 13–14 kartu di tanganmu, otomatis terurut. Ketuk sekali untuk memilih (kartu terangkat dan namanya muncul), ketuk lagi untuk membuang. Kartu di meja juga bisa diketuk untuk melihat namanya.' },
   { pos: 'bottom', sel: '.board', title: 'Meja', text: 'Buangan tiap pemain ada di depan sisinya. Kartu bertanda emas adalah buangan terakhir. Di tengah: angin putaran dan sisa dinding.' },
-  { pos: 'top', sel: '#actions', title: 'Aksi', text: 'Tombol Chi, Bong, Kong, Hu, atau Lewati muncul di sini hanya saat aksi itu sah.' },
+  { pos: 'top', sel: '#actions', title: 'Aksi', text: 'Tombol Ciak, Bong, Kong, Hu, atau Lewati muncul di sini hanya saat aksi itu sah.' },
   { pos: 'bottom', sel: '#opp-2', title: 'Lawan', text: 'Tiga bot dengan gaya berbeda: Pak Agus agresif, Pak Wawan seimbang, Pak Roti hati-hati. Kapsul emas menunjukkan saldo Kecik.' },
   { pos: 'bottom', sel: '#round-info', title: 'Tujuan', text: 'Bentuk 4 set + 1 pasang — Chicken Hand (tanpa tai) pun boleh. Nyalakan Petunjuk di Pengaturan kalau butuh saran buangan. Selamat bermain!' },
 ];

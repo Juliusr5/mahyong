@@ -64,6 +64,7 @@ const SOUNDS = {
   claim: (t) => { knock(t, 1200, 0.5, 0.08); knock(t + 0.07, 1500, 0.4, 0.07); },
   chip: (t) => { for (let i = 0; i < 4; i++) { tone(2400 + i * 180, t + i * 0.07, 0.12, { type: 'triangle', gain: 0.07 }); knock(t + i * 0.07, 5000, 0.12, 0.03); } },
   win: (t) => [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => { tone(f, t + i * 0.11, 0.9, { gain: 0.11 }); tone(f * 2, t + i * 0.11, 0.5, { gain: 0.03 }); }),
+  alert: (t) => { tone(880, t, 0.18, { type: 'triangle', gain: 0.12 }); tone(1318.5, t + 0.14, 0.3, { type: 'triangle', gain: 0.12 }); },
   draw: (t) => { tone(392, t, 0.5, { gain: 0.08 }); tone(330, t + 0.18, 0.6, { gain: 0.07 }); },
 };
 

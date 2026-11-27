@@ -8,10 +8,10 @@ Main: **https://juliusr5.github.io/mahyong/**
 
 - Tiap pemain memegang 13 kartu (bandar 14). Pada giliranmu ambil 1, buang 1.
 - Ketuk kartu sekali untuk memilih (terangkat), ketuk lagi atau tekan **Buang** untuk membuang.
-- Tombol **Chi / Bong / Kong / Hu / Lewati** hanya muncul kalau aksinya sah. Chi hanya dari pemain di kiri; **Hu boleh dari buangan pemain mana saja** (termasuk yang di kanan).
+- Tombol **Ciak / Bong / Kong / Hu / Lewati** hanya muncul kalau aksinya sah. Ciak hanya dari pemain di kiri; **Hu boleh dari buangan pemain mana saja** (termasuk yang di kanan).
 - Menang = 4 set + 1 pasang (atau Thirteen Orphans), batas 5 tai. Tangan lengkap tanpa tai tetap boleh menang sebagai **Chicken Hand** (dasar 2 Kecik). Seven Pairs tidak berlaku. 144 kartu, tanpa kartu hewan.
 - Tai: bong naga / angin kursi / angin putaran 1 per set, bunga sesuai kursi 1 per kartu, semua chi 1, **Ping Hu** (semua chi tanpa bunga, pasangan biasa) 4, semua bong 2, campur satu jenis 2, satu jenis murni 4, tiga naga kecil / empat angin kecil 4, kartu terakhir / pengganti kong / merampok kong 1, tangan batas 5 (tiga naga besar, empat angin besar, semua kehormatan, Thirteen Orphans).
-- Bayar: menang dari buangan → pembuang bayar 2× nilai dasar, dua pemain lain 1×; zimo → tiap lawan bayar 2×. Tabel dasar: Chicken Hand = 2, 1 tai = 4, 2 = 8, 3 = 16, 4 = 32, 5 = 64 Kecik (diatur di `js/scoring.js`, `PAY_TABLE`).
+- Bayar: menang dari buangan → pembuang bayar 2× nilai dasar, dua pemain lain 1×; cu mo (ambil sendiri) → tiap lawan bayar 2×. Tabel dasar: Chicken Hand = 2, 1 tai = 4, 2 = 8, 3 = 16, 4 = 32, 5 = 64 Kecik (diatur di `js/scoring.js`, `PAY_TABLE`).
 - Ketuk kartu mana pun (di tangan atau di meja) untuk melihat namanya. Nyalakan **Petunjuk** di Pengaturan untuk saran buangan, kartu yang ditunggu, dan peringatan kartu berbahaya. Daftar tai lengkap ada di menu **Bantuan**.
 
 ## Menjalankan secara lokal

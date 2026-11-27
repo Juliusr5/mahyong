@@ -56,8 +56,31 @@ function humanDecide(req) {
   ui.selected = null;
   computeHints(req);
   renderActions();
+  alertOptions(req);
   UI.renderHand(round, ui);
   return new Promise((resolve) => { ui.resolve = resolve; });
+}
+
+// Penanda mencolok saat kamu punya aksi penting (agar tidak terlewat).
+function alertOptions(req) {
+  const o = req.options;
+  const canHu = req.type === 'turn' ? !!o.tsumo : !!o.hu;
+  const acts = document.getElementById('actions');
+  acts.classList.toggle('alert', req.type !== 'turn' || canHu || (o.kongs && o.kongs.length > 0));
+  if (canHu) {
+    Sound.play('alert');
+    Sound.buzz(40);
+    Sound.say('Bisa hu!');
+    const fx = document.getElementById('fx');
+    const flash = document.createElement('div');
+    flash.className = 'hu-flash';
+    fx.appendChild(flash);
+    setTimeout(() => flash.remove(), 1600);
+    return;
+  }
+  if (req.type === 'turn') { if (o.kongs && o.kongs.length) Sound.say('Bisa kong'); return; }
+  const words = [o.kong && 'kong', o.pong && 'bong', o.chi && 'ciak'].filter(Boolean);
+  if (words.length) { Sound.play('alert'); Sound.say('Bisa ' + words[0]); }
 }
 
 function answer(action) {
@@ -68,6 +91,7 @@ function answer(action) {
   ui.req = null;
   ui.selected = null;
   UI.setActions('');
+  document.getElementById('actions').classList.remove('alert');
   r(action);
 }
 
@@ -77,16 +101,16 @@ function renderActions() {
   const o = req.options;
   const b = [];
   if (req.type === 'turn') {
-    if (o.tsumo) b.push(`<button class="btn gold" data-a="tsumo">Hu</button>`);
+    if (o.tsumo) b.push(`<button class="btn gold hu-big" data-a="tsumo">Hu!</button>`);
     for (const k of o.kongs) b.push(`<button class="btn" data-a="kong" data-k="${k.kind}">Kong ${o.kongs.length > 1 ? UI.tileK(k.kind).replace('class="tile', 'style="--w:16px;display:inline-block;vertical-align:middle" class="tile') : ''}</button>`);
     b.push(`<button class="btn ${o.tsumo ? '' : 'gold'}" data-a="discard" ${ui.selected === null ? 'disabled' : ''}>Buang</button>`);
   } else {
-    if (o.hu) b.push(`<button class="btn gold" data-a="hu">Hu</button>`);
+    if (o.hu) b.push(`<button class="btn gold hu-big" data-a="hu">Hu!</button>`);
     if (o.kong) b.push(`<button class="btn" data-a="kong">Kong</button>`);
     if (o.pong) b.push(`<button class="btn" data-a="pong">Bong</button>`);
     if (o.chi) {
-      if (o.chi.length === 1) b.push(`<button class="btn" data-a="chi" data-s="${o.chi[0]}">Chi</button>`);
-      else for (const s of o.chi) b.push(`<button class="btn chi-opt" data-a="chi" data-s="${s}" aria-label="Chi ${tileName(s)}">${[s, s + 1, s + 2].map((k) => UI.tileK(k)).join('')}</button>`);
+      if (o.chi.length === 1) b.push(`<button class="btn" data-a="chi" data-s="${o.chi[0]}">Ciak</button>`);
+      else for (const s of o.chi) b.push(`<button class="btn chi-opt" data-a="chi" data-s="${s}" aria-label="Ciak ${tileName(s)}">${[s, s + 1, s + 2].map((k) => UI.tileK(k)).join('')}</button>`);
     }
     b.push(`<button class="btn" data-a="pass">Lewati</button>`);
   }
@@ -226,7 +250,7 @@ function announce(ev) {
     if (e.type === 'pong' || e.type === 'chi' || e.type === 'kong') {
       Sound.play('claim');
       Sound.buzz(15);
-      const word = e.type === 'pong' ? 'bong' : e.type; // istilah lokal: Bong
+      const word = { pong: 'bong', chi: 'ciak' }[e.type] || e.type; // istilah Hokkien
       UI.toast(`${UI.PLAYERS[e.seat].name}: ${word[0].toUpperCase() + word.slice(1)}!`);
       speak = `${nick(e.seat)} ${word}`;
     }
@@ -348,13 +372,21 @@ function showResult(res) {
   } else {
     const w = res.winner;
     html += `<h2 class="res-title glow">${w === 0 ? 'Kamu menang!' : names[w] + ' menang'}</h2>`;
-    html += `<p class="res-sub">${res.from === null ? 'Zimo — ambil sendiri' : 'Dari buangan ' + names[res.from]}</p>`;
+    html += `<p class="res-sub">${res.from === null ? 'Cu mo — ambil sendiri' : 'Dari buangan ' + names[res.from]}</p>`;
     const melds = round.melds[w].map((m) => `<div class="meld">${(m.concealed ? [m.kind, m.kind, m.kind, m.kind] : m.tiles.map(kindOf)).map((k) => UI.tileK(k)).join('')}</div>`).join('');
     const hand = res.hand.filter((t) => t !== res.winTile).sort((a, b) => kindOf(a) - kindOf(b)).map((t) => UI.tile(t)).join('');
     html += `<div class="res-hand">${melds}<div class="meld">${hand}</div><div class="meld">${UI.tile(res.winTile, 'wait')}</div></div>`;
     html += `<ul class="fan-list">${res.score.items.map((i) => `<li><span>${i.name}</span><b>+${i.fan}</b></li>`).join('')}</ul>`;
     html += `<div class="fan-total"><span>Total${res.score.limit ? ' (batas maksimal)' : ''}</span><span>${res.score.fan} tai</span></div>`;
   }
+  // tangan semua bot dibuka di akhir ronde (untuk belajar)
+  const showHand = (s) => {
+    const ms = round.melds[s].map((x) => `<div class="meld">${(x.concealed ? [x.kind, x.kind, x.kind, x.kind] : x.tiles.map(kindOf)).map((k) => UI.tileK(k)).join('')}</div>`).join('');
+    const h = round.hands[s].slice().sort((p, q) => kindOf(p) - kindOf(q)).map((t) => UI.tile(t)).join('');
+    return `<div class="reveal"><div class="reveal-name">${names[s]}</div><div class="reveal-tiles">${ms}<div class="meld">${h}</div></div></div>`;
+  };
+  const others = [1, 2, 3].filter((s) => !(res.type === 'win' && s === res.winner));
+  html += `<div class="rule"></div><h3 style="margin-top:0">Tangan lawan</h3>${others.map(showHand).join('')}`;
   html += `<div class="rule"></div><div class="pay-grid">` + res.payments.map((p, s) =>
     `<span>${names[s]}</span><span class="${p > 0 ? 'plus' : p < 0 ? 'minus' : 'zero'}">${p > 0 ? '+' : ''}${p}</span><span class="bal">${UI.fmt(match.chips[s])}</span>`).join('') + `</div>`;
   if (match.over) {
@@ -376,7 +408,7 @@ function startRound() {
     const others = [1, 2, 3].filter((s) => s !== seat);
     round.cheat = { seat, peek: [0, others[Math.floor(Math.random() * 2)]] };
     // bot beruntung: 50% peluang dapat kartu terbaik dari 8 kartu teratas dinding (terukur: peluang menangmu ~16% -> ~10%)
-    round.luck = { seats: [1, 2, 3], chance: 0.5, depth: 8 };
+    round.luck = { seats: [1, 2, 3], chance: Number(settings.luck) || 0.5, depth: 8 };
   }
   ui.dealing = true;
   draw();
@@ -496,6 +528,7 @@ function showLog() {
 function showSettings() {
   UI.showModal(`<h2>Pengaturan</h2>
     <div class="field"><span>Kesulitan</span>${seg('level', [['mudah', 'Mudah'], ['sedang', 'Sedang'], ['sulit', 'Sulit']])}</div>
+    <div class="field"><span>Keberuntungan bot<br><small style="color:var(--muted)">khusus Sulit</small></span>${seg('luck', [[0.3, 'Normal'], [0.5, 'Sulit'], [0.7, 'Sangat']])}</div>
     <div class="field"><span>Panjang</span>${seg('length', [['east', '1 putaran'], ['endless', 'Terus']])}</div>
     <div class="field"><span>Kecepatan bot</span>${seg('speed', [['lambat', 'Lambat'], ['normal', 'Normal'], ['cepat', 'Cepat']])}</div>
     <div class="field"><span>Suara</span>${seg('sound', [[true, 'Nyala'], [false, 'Mati']])}</div>
@@ -528,7 +561,7 @@ function showStats() {
     <div class="stats-grid">
       <div class="stat"><b>${stats.rounds}</b><span>Ronde dimainkan</span></div>
       <div class="stat"><b>${rate}%</b><span>Tingkat menang</span></div>
-      <div class="stat"><b>${stats.zimo}</b><span>Menang zimo</span></div>
+      <div class="stat"><b>${stats.zimo}</b><span>Menang cu mo</span></div>
       <div class="stat"><b>${UI.fmt(stats.maxChips)}</b><span>Kecik tertinggi</span></div>
       <div class="stat"><b>${stats.wins}</b><span>Total menang</span></div>
       <div class="stat"><b>${stats.dealtIn}</b><span>Kena tembak</span></div>
