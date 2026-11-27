@@ -102,18 +102,29 @@ function fitRiver(el) {
   const tiles = [...el.querySelectorAll('.tile')];
   tiles.forEach((t) => t.style.removeProperty('--w'));
   if (!tiles.length) return;
-  // Hitung langsung ukuran kartu terbesar yang muat (tanpa mengukur ulang tata letak berulang kali).
+  // Simulasikan penyusunan baris (set terbuka tidak terpotong; kong bisa jadi 2 baris di area sempit),
+  // lalu cari ukuran kartu terbesar yang muat. Tidak bergantung pada pengukuran ulang tata letak.
   const base = parseFloat(getComputedStyle(el).getPropertyValue('--w')) || 20;
   const W = el.clientWidth, H = el.clientHeight;
-  const melds = el.querySelectorAll('.rmeld').length;
-  const units = tiles.length + melds * 0.6; // set terbuka punya bingkai & jarak tambahan
-  const fits = (w) => {
-    const cols = Math.max(1, Math.floor((W + 1) / (w + 1)));
-    const rows = Math.ceil(units / cols) + (melds ? 1 : 0); // cadangan satu baris untuk set yang tidak terpotong
-    return rows * (w * 1.36 + w * 0.14 + 2) <= H;
+  const items = [...el.children].map((ch) => (ch.classList.contains('rmeld') ? { meld: ch.querySelectorAll('.tile').length } : { meld: 0 }));
+  const height = (w) => {
+    const rowH = w * 1.36 + w * 0.14;
+    let x = 0, lineH = 0, total = 0;
+    for (const it of items) {
+      let iw, ih;
+      if (it.meld) {
+        iw = it.meld * w + 2 + 3;
+        ih = rowH + 2 + 3;
+        if (iw > W) { const per = Math.max(1, Math.floor((W - 2) / w)); ih = Math.ceil(it.meld / per) * rowH + 2 + 3; iw = W; }
+      } else { iw = w + 1; ih = rowH + 1; }
+      if (x > 0 && x + iw > W + 0.5) { total += lineH; x = 0; lineH = 0; }
+      x += iw;
+      lineH = Math.max(lineH, ih);
+    }
+    return total + lineH;
   };
   let w = base;
-  while (w > 11 && !fits(w)) w -= 0.5;
+  while (w > 10 && height(w) > H - 2) w -= 0.5;
   if (w < base) tiles.forEach((t) => t.style.setProperty('--w', w + 'px'));
 }
 
