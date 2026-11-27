@@ -52,8 +52,9 @@ export function render(r, match, ui) {
   for (const s of [1, 2, 3]) {
     const melds = r.melds[s].map((m, i) => meldHTML(m, ui.fresh?.meld === `${s}:${i}`)).join('');
     const fl = r.flowers[s].map((t) => tile(t)).join('');
-    $('opp-' + s).innerHTML = pinfo(r, match, s) +
-      `<div class="pcount">${r.hands[s].length} kartu</div>` +
+    const side = s !== 2;
+    const backs = `<div class="backs" title="${r.hands[s].length} kartu">${r.hands[s].map(() => side ? `<span class="rot">${back()}</span>` : back()).join('')}</div>`;
+    $('opp-' + s).innerHTML = pinfo(r, match, s) + backs +
       (fl ? `<div class="flowers">${fl}</div>` : '') +
       `<div class="omelds">${melds}</div>`;
   }
@@ -63,8 +64,10 @@ export function render(r, match, ui) {
     $('river-' + s).innerHTML = r.discards[s].map((t) => {
       let cls = '';
       if (lastD && !lastD.claimed && lastD.tile === t) cls = 'last-discard' + (ui.fresh?.discard === t ? ' fresh' : '');
-      return tile(t, cls);
+      const h = tile(t, cls);
+      return s === 1 || s === 3 ? `<span class="rot">${h}</span>` : h;
     }).join('');
+    $('river-' + s).classList.toggle('active', r.phase === 'turn' && r.turn === s);
   }
   // tengah
   const turnName = r.phase === 'end' ? '' : r.phase === 'turn' ? `Giliran ${PLAYERS[r.turn].name}` : 'Menunggu klaim…';

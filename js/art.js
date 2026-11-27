@@ -1,54 +1,66 @@
-// Gambar kartu, avatar, dan chip — semua SVG buatan sendiri.
-const RED = '#b3261e', GREEN = '#1f6b3a', BLUE = '#1d3a6e', INK = '#1b2433';
+// Gambar kartu, avatar, dan chip — semua SVG buatan sendiri, gaya kartu tradisional.
+const RED = '#d0352b', GREEN = '#2d7a4b', NAVY = '#1f2c6b';
 const CJK = `font-family="'Songti SC','STSong','Noto Serif CJK SC','Source Han Serif SC','SimSun',serif" font-weight="700"`;
-const NUMS = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+const NUMS = ['一', '二', '三', '四', '伍', '六', '七', '八', '九'];
 
+// Lingkaran bercincin konsentris
 function dot(x, y, r, col) {
-  return `<circle cx="${x}" cy="${y}" r="${r}" fill="${col}"/>` +
-    `<circle cx="${x}" cy="${y}" r="${r * 0.62}" fill="none" stroke="#fffaf0" stroke-width="${r * 0.18}"/>` +
-    `<circle cx="${x}" cy="${y}" r="${r * 0.22}" fill="#fffaf0"/>`;
+  return `<circle cx="${x}" cy="${y}" r="${r * 0.92}" fill="#fff" stroke="${col}" stroke-width="${r * 0.16}"/>` +
+    `<circle cx="${x}" cy="${y}" r="${r * 0.62}" fill="none" stroke="${col}" stroke-width="${r * 0.13}"/>` +
+    `<circle cx="${x}" cy="${y}" r="${r * 0.34}" fill="none" stroke="${col}" stroke-width="${r * 0.12}"/>` +
+    `<circle cx="${x}" cy="${y}" r="${r * 0.12}" fill="${col}"/>`;
+}
+function bigDot() {
+  return `<circle cx="30" cy="40" r="22" fill="#fff" stroke="${NAVY}" stroke-width="2.4" stroke-dasharray="3.2 1.6"/>` +
+    `<circle cx="30" cy="40" r="18.5" fill="none" stroke="${GREEN}" stroke-width="2.2"/>` +
+    `<circle cx="30" cy="40" r="15" fill="none" stroke="${GREEN}" stroke-width="1.2"/>` +
+    `<circle cx="30" cy="40" r="11" fill="none" stroke="${RED}" stroke-width="2.6"/>` +
+    `<circle cx="30" cy="40" r="6.5" fill="none" stroke="${RED}" stroke-width="1.4"/>` +
+    `<circle cx="30" cy="40" r="2.6" fill="${NAVY}"/>`;
 }
 
 const DOTS = {
-  1: [[30, 40, 17, RED]],
-  2: [[30, 22, 10, GREEN], [30, 58, 10, BLUE]],
-  3: [[15, 16, 9, BLUE], [30, 40, 9, RED], [45, 64, 9, GREEN]],
-  4: [[18, 22, 9.5, BLUE], [42, 22, 9.5, GREEN], [18, 58, 9.5, GREEN], [42, 58, 9.5, BLUE]],
-  5: [[16, 18, 8.5, BLUE], [44, 18, 8.5, GREEN], [30, 40, 8.5, RED], [16, 62, 8.5, GREEN], [44, 62, 8.5, BLUE]],
-  6: [[18, 15, 8, GREEN], [42, 15, 8, GREEN], [18, 40, 8, RED], [42, 40, 8, RED], [18, 65, 8, RED], [42, 65, 8, RED]],
-  7: [[13, 12, 6.5, GREEN], [30, 19, 6.5, GREEN], [47, 26, 6.5, GREEN], [18, 47, 7, RED], [42, 47, 7, RED], [18, 66, 7, RED], [42, 66, 7, RED]],
-  8: [14, 32, 50, 68].flatMap((y) => [[18, y, 7.5, BLUE], [42, y, 7.5, BLUE]]),
-  9: [16, 40, 64].flatMap((y, i) => [14, 30, 46].map((x) => [x, y, 7.5, [BLUE, RED, GREEN][i]])),
+  2: [[30, 22, 11, GREEN], [30, 58, 11, NAVY]],
+  3: [[15, 15, 9, GREEN], [30, 40, 9, RED], [45, 65, 9, NAVY]],
+  4: [[18, 22, 10, NAVY], [42, 22, 10, GREEN], [18, 58, 10, GREEN], [42, 58, 10, NAVY]],
+  5: [[16, 17, 9, NAVY], [44, 17, 9, GREEN], [30, 40, 9, RED], [16, 63, 9, GREEN], [44, 63, 9, NAVY]],
+  6: [[18, 14, 8, GREEN], [42, 14, 8, GREEN], [18, 42, 8.5, RED], [42, 42, 8.5, RED], [18, 64, 8.5, RED], [42, 64, 8.5, RED]],
+  7: [[13, 11, 6.5, GREEN], [30, 18, 6.5, GREEN], [47, 25, 6.5, GREEN], [18, 46, 7.5, RED], [42, 46, 7.5, RED], [18, 66, 7.5, RED], [42, 66, 7.5, RED]],
+  8: [12, 31, 50, 69].flatMap((y) => [[19, y, 8, NAVY], [41, y, 8, NAVY]]),
+  9: [15, 40, 65].flatMap((y, i) => [14, 30, 46].map((x) => [x, y, 7.8, [GREEN, RED, NAVY][i]])),
 };
 
-function stick(x, y, h, col, w = 8) {
-  const n = y + h / 2;
-  return `<rect x="${x - w / 2}" y="${y}" width="${w}" height="${h}" rx="${w / 2}" fill="${col}"/>` +
-    `<rect x="${x - w / 2 + 1.6}" y="${y + 2}" width="${w * 0.25}" height="${h - 4}" rx="1" fill="#ffffff" opacity=".35"/>` +
-    `<line x1="${x - w / 2}" y1="${n}" x2="${x + w / 2}" y2="${n}" stroke="#fffaf0" stroke-width="1.4"/>`;
+// Batang bambu bergaris dengan buku di tengah
+function stick(x, y, h, col, ang = 0) {
+  const w = 6.4, hh = h / 2;
+  const seg = (yy) => `<rect x="${x - w / 2}" y="${yy}" width="${w}" height="${hh - 0.9}" rx="${w / 2}" fill="#fff" stroke="${col}" stroke-width="1.9"/>`;
+  return `<g transform="rotate(${ang} ${x} ${y + h / 2})">${seg(y)}${seg(y + hh + 0.9)}` +
+    `<line x1="${x}" y1="${y + 2.5}" x2="${x}" y2="${y + h - 2.5}" stroke="${col}" stroke-width=".9"/></g>`;
 }
 
 function bamboo(n) {
   const S = [];
   const col = (x, ys, h, c) => ys.forEach((y) => S.push(stick(x, y, h, c)));
   switch (n) {
-    case 1: // burung merak bergaya
-      return `<path d="M30 70 C18 60 14 44 22 30 C26 22 34 20 38 26 C44 34 40 48 30 56" fill="${GREEN}"/>` +
-        `<path d="M30 56 C36 62 44 64 50 60" stroke="${GREEN}" stroke-width="4" fill="none" stroke-linecap="round"/>` +
-        `<circle cx="34" cy="20" r="6" fill="${RED}"/><path d="M39 19 l7 -2 l-6 5z" fill="${BLUE}"/>` +
-        `<circle cx="35" cy="19" r="1.4" fill="#fffaf0"/>` +
-        `<path d="M22 46 C26 40 30 40 32 46" stroke="#fffaf0" stroke-width="1.6" fill="none"/>` +
-        `<path d="M20 56 C25 50 30 50 32 56" stroke="#fffaf0" stroke-width="1.6" fill="none"/>`;
-    case 2: col(30, [10, 44], 26, GREEN); break;
-    case 3: col(30, [10], 26, GREEN); col(18, [44], 26, GREEN); col(42, [44], 26, GREEN); break;
-    case 4: col(18, [10, 44], 26, GREEN); col(42, [10, 44], 26, BLUE); break;
-    case 5: col(14, [10, 44], 26, GREEN); col(46, [10, 44], 26, BLUE); col(30, [27], 26, RED); break;
-    case 6: [14, 30, 46].forEach((x) => col(x, [10, 44], 26, GREEN)); break;
-    case 7: col(30, [6], 20, RED); [14, 30, 46].forEach((x) => col(x, [30, 54], 20, GREEN)); break;
-    case 8:
-      [10, 23.5, 36.5, 50].forEach((x, i) => col(x, [9, 44], 27, i % 3 === 0 ? GREEN : BLUE));
+    case 1: // burung bergaya (desain sendiri)
+      return `<path d="M28 68 C16 60 13 45 20 33 C24 26 33 24 37 30 C42 38 39 50 30 57" fill="#fff" stroke="${GREEN}" stroke-width="2.2"/>` +
+        `<path d="M22 44 C26 40 30 40 33 45 M21 52 C25 48 29 48 31 53" stroke="${GREEN}" stroke-width="1.6" fill="none"/>` +
+        `<path d="M29 57 C35 64 44 66 51 61 M30 60 C33 70 40 74 46 73" stroke="${RED}" stroke-width="2" fill="none" stroke-linecap="round"/>` +
+        `<circle cx="33" cy="21" r="6.5" fill="#fff" stroke="${RED}" stroke-width="2.2"/><path d="M39 20 l7 -1.5 l-6 4.5z" fill="${NAVY}"/>` +
+        `<path d="M30 15 l-2 -6 l4 4 l1 -6 l2 6" stroke="${RED}" stroke-width="1.5" fill="none"/>` +
+        `<circle cx="34.5" cy="20" r="1.6" fill="${NAVY}"/>` +
+        `<path d="M10 64 L22 60 M12 70 L24 64" stroke="${NAVY}" stroke-width="1.6"/>`;
+    case 2: col(30, [7, 43], 30, GREEN); break;
+    case 3: col(30, [7], 30, GREEN); col(17, [43], 30, GREEN); col(43, [43], 30, GREEN); break;
+    case 4: [17, 43].forEach((x) => col(x, [7, 43], 30, GREEN)); break;
+    case 5: [13, 47].forEach((x) => col(x, [7, 43], 30, GREEN)); col(30, [25], 30, RED); break;
+    case 6: [13, 30, 47].forEach((x) => col(x, [7, 43], 30, GREEN)); break;
+    case 7: col(30, [4], 22, RED); [13, 30, 47].forEach((x) => col(x, [30, 55], 22, GREEN)); break;
+    case 8: // atas "W", bawah "M"
+      [13, 24, 36, 47].forEach((x, i) => S.push(stick(x, 6, 30, GREEN, i % 2 ? -16 : 16)));
+      [13, 24, 36, 47].forEach((x, i) => S.push(stick(x, 44, 30, GREEN, i % 2 ? 16 : -16)));
       break;
-    case 9: [14, 30, 46].forEach((x, i) => col(x, [6, 30, 54], 20, i === 1 ? RED : GREEN)); break;
+    case 9: [13, 30, 47].forEach((x, i) => col(x, [4, 29, 54], 22, i === 1 ? RED : GREEN)); break;
   }
   return S.join('');
 }
@@ -57,31 +69,41 @@ function text(t, x, y, size, col, extra = '') {
   return `<text x="${x}" y="${y}" font-size="${size}" fill="${col}" text-anchor="middle" dominant-baseline="central" ${CJK} ${extra}>${t}</text>`;
 }
 
+// Bunga/musim: tangkai, daun, kelopak (desain sendiri)
+function blossom(f) {
+  const petal = [RED, RED, RED, RED, RED, RED, RED, GREEN][f];
+  const cx = 30, cy = 46;
+  const petals = [0, 72, 144, 216, 288].map((a) => `<ellipse cx="${cx}" cy="${cy - 7}" rx="4.6" ry="6.5" fill="#fff" stroke="${petal}" stroke-width="1.8" transform="rotate(${a + f * 9} ${cx} ${cy})"/>`).join('');
+  return `<path d="M14 74 C22 66 26 58 30 ${cy}" stroke="${NAVY}" stroke-width="2.4" fill="none"/>` +
+    `<path d="M22 64 C12 60 9 52 12 48 C18 52 22 56 22 64z" fill="${GREEN}"/>` +
+    `<path d="M28 58 C38 60 45 54 46 48 C38 49 32 52 28 58z" fill="${GREEN}"/>` +
+    `<path d="M30 34 C26 24 30 16 36 12" stroke="${GREEN}" stroke-width="1.8" fill="none"/>` +
+    petals + `<circle cx="${cx}" cy="${cy}" r="3.4" fill="${petal}"/>`;
+}
+
 const LABEL = (k) => {
   if (k < 27) return String((k % 9) + 1);
   if (k < 31) return 'TSBU'[k - 27];
-  if (k < 34) return ['M', 'H', 'P'][k - 31];
-  return String(((k - 34) % 4) + 1);
+  return ['M', 'H', 'P'][k - 31];
 };
 
 export function faceSVG(k) {
   let body;
   if (k < 9) body = bamboo(k + 1);
+  else if (k === 9) body = bigDot();
   else if (k < 18) body = DOTS[k - 8].map(([x, y, r, c]) => dot(x, y, r, c)).join('');
-  else if (k < 27) body = text(NUMS[k - 18], 30, 24, 26, INK) + text('萬', 30, 58, 28, RED);
-  else if (k < 31) body = text('東南西北'[k - 27], 30, 42, 38, INK);
-  else if (k === 31) body = text('中', 30, 42, 42, RED);
-  else if (k === 32) body = text('發', 30, 42, 40, GREEN);
-  else if (k === 33) body = `<rect x="11" y="13" width="38" height="56" rx="4" fill="none" stroke="${BLUE}" stroke-width="4"/>` +
-    `<rect x="17" y="19" width="26" height="44" rx="2" fill="none" stroke="${BLUE}" stroke-width="1.5"/>`;
+  else if (k < 27) body = text(NUMS[k - 18], 30, 22, 24, NAVY) + text('萬', 30, 56, 30, RED);
+  else if (k < 31) body = text('東南西北'[k - 27], 30, 41, 40, NAVY);
+  else if (k === 31) body = text('中', 30, 41, 44, RED);
+  else if (k === 32) body = text('發', 30, 41, 40, GREEN);
+  else if (k === 33) body = `<rect x="10" y="11" width="40" height="58" rx="3" fill="none" stroke="${NAVY}" stroke-width="3"/>` +
+    `<rect x="14.5" y="15.5" width="31" height="49" rx="1.5" fill="none" stroke="${NAVY}" stroke-width="1.3"/>`;
   else {
     const f = k - 34;
-    const ch = '梅蘭菊竹春夏秋冬'[f];
-    const col = f < 4 ? GREEN : RED;
-    body = `<circle cx="30" cy="42" r="20" fill="none" stroke="${col}" stroke-width="1.4" opacity=".5"/>` + text(ch, 30, 42, 30, col);
+    const num = f < 4 ? text('一二三四'[f], 48, 11, 13, NAVY) : `<text x="5" y="15" font-size="15" font-weight="700" fill="${NAVY}" font-family="Georgia,serif">${f - 3}</text>`;
+    return blossom(f) + num;
   }
-  const lab = `<text x="5" y="10" font-size="10" font-family="system-ui,sans-serif" font-weight="700" fill="#7a6a4f">${LABEL(k)}</text>`;
-  return body + lab;
+  return body + `<text x="4" y="9" font-size="8" font-family="system-ui,sans-serif" font-weight="700" fill="#8a8170" opacity=".75">${LABEL(k)}</text>`;
 }
 
 export function buildSprite() {

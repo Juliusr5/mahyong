@@ -113,7 +113,7 @@ button { font: inherit; color: inherit; }
   position: relative; flex: none;
   width: var(--w); height: calc(var(--w) * 1.36);
   border-radius: calc(var(--w) * .14);
-  background: linear-gradient(160deg, #fffdf7 0%, #f6eedb 55%, #e9dcbd 100%);
+  background: linear-gradient(160deg, #ffffff 0%, #f8f6ef 60%, #ebe6d8 100%);
   box-shadow:
     inset 0 1px 0 #fff,
     inset 0 -1px 0 rgba(160,130,80,.35),
@@ -150,50 +150,62 @@ button { font: inherit; color: inherit; }
 
 .table {
   flex: 1; min-height: 0;
-  display: grid; grid-template-columns: 56px 1fr 56px; grid-template-rows: auto 1fr;
-  grid-template-areas: 'top top top' 'left board right';
-  gap: 4px;
+  display: grid; grid-template-columns: 52px 1fr 52px; grid-template-rows: auto 1fr;
+  grid-template-areas: 'top top top' 'left mid right';
+  gap: 2px 2px;
 }
 .opp-top { grid-area: top; }
 .opp-left { grid-area: left; }
 .opp-right { grid-area: right; }
+/* meja persegi di tengah */
+.mid { grid-area: mid; min-height: 0; min-width: 0; container-type: size; display: grid; place-items: center; }
 .board {
-  grid-area: board; min-height: 0;
-  display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto 1fr auto;
-  grid-template-areas: 'rt rt rt' 'rl c rr' 'rb rb rb';
-  gap: 4px; padding: 6px;
-  border-radius: 16px;
-  background: radial-gradient(ellipse at center, rgba(255,255,255,.035), rgba(0,0,0,.12));
-  box-shadow: inset 0 0 0 1px rgba(220,192,138,.14), inset 0 0 30px rgba(0,0,0,.25);
+  --s: min(100cqw, 100cqh);
+  --rw: calc(var(--s) / 16.4);          /* lebar kartu buangan */
+  --band: calc(var(--rw) * 4.55);        /* tebal pita buangan (3 baris) */
+  width: var(--s); height: var(--s);
+  display: grid;
+  grid-template-columns: var(--band) 1fr var(--band);
+  grid-template-rows: var(--band) 1fr var(--band);
+  grid-template-areas: 't t r' 'l c r' 'l b b';   /* kincir: tiap buangan di depan pemiliknya */
+  gap: 3px; padding: 5px;
+  border-radius: 14px;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,.045), rgba(0,0,0,.14));
+  box-shadow: inset 0 0 0 1px rgba(220,192,138,.22), inset 0 0 0 5px rgba(0,0,0,.12), inset 0 0 34px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.25);
 }
-.river { display: flex; flex-wrap: wrap; gap: 1px 1px; align-content: flex-start; --w: 17px; }
-.river-top { grid-area: rt; justify-content: center; min-height: 26px; max-width: calc(9 * 18px); justify-self: center; }
-.river-bottom { grid-area: rb; justify-content: center; min-height: 26px; max-width: calc(9 * 18px); justify-self: center; }
-.river-left { grid-area: rl; width: calc(3 * 18px); }
-.river-right { grid-area: rr; width: calc(3 * 18px); }
-.river .tile { margin-bottom: 3px; }
+.river { display: flex; flex-wrap: wrap; gap: 1px; --w: var(--rw); min-width: 0; min-height: 0; overflow: hidden; }
+.river .tile { margin-bottom: 2px; }
+.river-top { grid-area: t; align-content: flex-start; }
+.river-bottom { grid-area: b; flex-wrap: wrap-reverse; align-content: flex-start; }
+.river-left { grid-area: l; flex-direction: column; align-content: flex-start; }
+.river-right { grid-area: r; flex-direction: column; flex-wrap: wrap-reverse; align-content: flex-start; }
+.rot { position: relative; flex: none; width: calc(var(--w) * 1.36 + 2px); height: calc(var(--w) + 1px); }
+.rot .tile { position: absolute; left: 50%; top: 50%; margin: 0; translate: -50% -50%; }
+.river-left .rot .tile { rotate: 90deg; }
+.river-right .rot .tile { rotate: -90deg; }
+.river.active { background: rgba(220,192,138,.08); border-radius: 6px; }
 .center {
-  grid-area: c; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-  text-align: center; min-width: 0;
+  grid-area: c; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  text-align: center; min-width: 0; min-height: 0;
 }
 .wind-disc {
-  width: 64px; height: 64px; border-radius: 50%;
+  width: calc(var(--s) * .2); height: calc(var(--s) * .2); min-width: 48px; min-height: 48px; border-radius: 50%;
   display: grid; place-items: center;
   background: radial-gradient(circle at 35% 30%, #1d5e47, #0a2c21);
   border: 1px solid var(--gold-soft); box-shadow: 0 6px 18px rgba(0,0,0,.35), inset 0 0 0 4px rgba(0,0,0,.15);
   font-family: var(--serif); color: var(--gold); line-height: 1;
 }
-.wind-disc span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-family: var(--sans); }
+.wind-disc span { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-family: var(--sans); }
 .wind-disc b { font-size: 20px; font-weight: 600; }
-.wall-count { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.wall-count b { color: var(--text); font-size: 15px; }
-.turn-arrow { font-size: 12px; color: var(--gold); min-height: 16px; }
+.wall-count { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.wall-count b { color: var(--text); font-size: 14px; }
+.turn-arrow { font-size: 11px; color: var(--gold); min-height: 14px; }
 
 /* lawan */
-.opp { display: flex; gap: 6px; align-items: center; min-width: 0; }
-.opp-top { justify-content: center; padding: 2px 0; }
-.opp-left, .opp-right { flex-direction: column; justify-content: flex-start; padding-top: 4px; }
-.pinfo { display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 11px; min-width: 52px; }
+.opp { display: flex; gap: 4px; align-items: center; min-width: 0; min-height: 0; }
+.opp-top { justify-content: center; padding: 2px 0 4px; gap: 10px; }
+.opp-left, .opp-right { flex-direction: column; justify-content: center; }
+.pinfo { display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 11px; }
 .opp-top .pinfo { flex-direction: row; gap: 6px; }
 .avatar { width: 38px; height: 38px; position: relative; flex: none; border-radius: 50%; transition: box-shadow .3s; }
 .avatar svg { width: 100%; height: 100%; }
@@ -204,14 +216,22 @@ button { font: inherit; color: inherit; }
   display: grid; place-items: center; font-family: var(--serif);
 }
 .badge.dealer { left: -5px; right: auto; background: var(--red); border-color: #f0b0a8; color: #fff; }
-.pname { font-weight: 600; color: var(--text); white-space: nowrap; max-width: 56px; overflow: hidden; text-overflow: ellipsis; }
-.pchips { color: var(--gold); font-variant-numeric: tabular-nums; font-weight: 600; }
-.pcount { color: var(--muted); font-size: 10px; }
+.pname { font-weight: 600; color: var(--text); white-space: nowrap; max-width: 52px; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+.opp-top .pname { max-width: 110px; text-align: left; }
+.pchips { color: var(--gold); font-variant-numeric: tabular-nums; font-weight: 600; text-align: center; }
+.opp-top .pchips { text-align: left; }
+.backs { display: flex; --w: 9px; }
+.backs .tile { margin-bottom: 1px; box-shadow: 0 1px 0 #cdbb93, 0 2px 3px rgba(0,0,0,.4); }
+.opp-top .backs { --w: 11px; }
+.opp-left .backs, .opp-right .backs { flex-direction: column; }
+.opp-left .backs .rot, .opp-right .backs .rot { width: calc(var(--w) * 1.36); height: calc(var(--w) * .82); }
+.opp-left .backs .rot .tile { rotate: 90deg; }
+.opp-right .backs .rot .tile { rotate: -90deg; }
 .omelds { display: flex; flex-wrap: wrap; gap: 3px; --w: 13px; justify-content: center; }
 .opp-left .omelds, .opp-right .omelds { flex-direction: column; align-items: center; }
 .meld { display: flex; gap: 0; }
 .meld .tile { margin-bottom: 2px; }
-.flowers { display: flex; gap: 1px; --w: 12px; flex-wrap: wrap; justify-content: center; }
+.flowers { display: flex; gap: 1px; --w: 11px; flex-wrap: wrap; justify-content: center; }
 .opp-top .names { display: flex; flex-direction: column; align-items: flex-start; }
 
 /* pemain */
@@ -320,11 +340,6 @@ button { font: inherit; color: inherit; }
 /* layar pendek (iPhone SE) */
 @media (max-height: 700px) {
   .topbar { height: 40px; }
-  .river { --w: 15px; }
-  .river-top, .river-bottom { max-width: calc(10 * 16px); }
-  .river-left, .river-right { width: calc(3 * 16px); }
-  .wind-disc { width: 54px; height: 54px; }
   .me-melds { --w: 18px; min-height: 26px; }
 }
-.opp-top .pname { max-width: 110px; }
 .modal-actions .btn { white-space: nowrap; padding: 0 12px; }
