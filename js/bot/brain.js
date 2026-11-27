@@ -20,7 +20,7 @@ export function unseenCounts(view) {
   const u = new Array(34).fill(4);
   const see = (k) => { if (k < 34) u[k]--; };
   view.hand.forEach((t) => see(kindOf(t)));
-  Object.values(view.peek || {}).forEach((h) => h.forEach((t) => see(kindOf(t))));
+  if (view.peekUnseen !== false) Object.values(view.peek || {}).forEach((h) => h.forEach((t) => see(kindOf(t))));
   view.discards.forEach((d) => d.forEach((t) => see(kindOf(t))));
   view.melds.forEach((ms) => ms.forEach((m) => {
     if (m.tiles.length) m.tiles.forEach((t) => see(kindOf(t)));
@@ -116,7 +116,7 @@ function tenpaiWaits(c, melds, view, unseen, fn) {
       const ctx = { kinds, melds, seatWind: view.seatWind, roundWind: view.roundWind, flowers: fl, last: view.wallCount <= 4 };
       const ron = scoreHand({ ...ctx, selfDrawn: false });
       const tsu = scoreHand({ ...ctx, selfDrawn: true });
-      out.push({ k, n: unseen[k], ron: ron && ron.fan >= MIN_FAN ? ron.fan : 0, tsumo: tsu && tsu.fan >= MIN_FAN ? tsu.fan : 0 });
+      out.push({ k, n: unseen[k], ron: ron && ron.fan >= MIN_FAN ? ron.fan : -1, tsumo: tsu && tsu.fan >= MIN_FAN ? tsu.fan : -1 });
     }
     c[k]--;
   }
@@ -131,8 +131,8 @@ function tenpaiEV(c, melds, view, unseen, fn, U, T, env, pid = '') {
   let qD = 0, qR = 0, vD = 0, vR = 0, uke = 0;
   for (const w of waits) {
     uke += w.n;
-    if (w.tsumo) { qD += w.n / U; vD += (w.n / U) * 6 * basePay(w.tsumo); }
-    if (w.ron) { qR += (w.n / U) * 0.45; vR += (w.n / U) * 0.45 * 4 * basePay(w.ron); }
+    if (w.tsumo >= 0) { qD += w.n / U; vD += (w.n / U) * 6 * basePay(w.tsumo); }
+    if (w.ron >= 0) { qR += (w.n / U) * 0.45; vR += (w.n / U) * 0.45 * 4 * basePay(w.ron); }
   }
   const pw = winProb(0, 0, 0, qD, qR, T, env.lambda);
   const tot = qD + 3 * qR;
@@ -218,13 +218,13 @@ function rollout(c0, melds, view, pool, fn, rng, T, lambda) {
     const kinds = [];
     for (let j = 0; j < 34; j++) for (let n = 0; n < c[j]; n++) kinds.push(j);
     const r = scoreHand({ kinds, melds, selfDrawn, seatWind: view.seatWind, roundWind: view.roundWind, flowers: fl });
-    return r && r.fan >= MIN_FAN ? r.fan : 0;
+    return r && r.fan >= MIN_FAN ? r.fan : -1;
   };
   let idx = 0, surv = 1;
   for (let t = 0; t < T && idx < need; t++) {
     const d = pool[idx++];
     c[d]++;
-    if (shanten(c, nM) === -1) { const f = score(true); if (f) return surv * 6 * basePay(f); }
+    if (shanten(c, nM) === -1) { const f = score(true); if (f >= 0) return surv * 6 * basePay(f); }
     // buang yang menjaga shanten rencana paling kecil
     let bestK = d, bestS = 99;
     for (let k = 0; k < 34; k++) {
@@ -239,7 +239,7 @@ function rollout(c0, melds, view, pool, fn, rng, T, lambda) {
       const k = pool[idx++];
       if (rng() > 0.45 || c[k] >= 4) continue;
       c[k]++;
-      if (shanten(c, nM) === -1) { const f = score(false); if (f) return surv * 4 * basePay(f); }
+      if (shanten(c, nM) === -1) { const f = score(false); if (f >= 0) return surv * 4 * basePay(f); }
       c[k]--;
     }
     surv *= 1 - lambda;
@@ -378,6 +378,47 @@ function claimDecision(view, req, cfg) {
   return { type: 'pass' };
 }
 
+// Bot pengintip dinding: tahu kartu yang akan diambil berikutnya, jadi pilih buangan yang pas dengannya.
+function foresee(view, cfg, unseen, env, ranked) {
+  const [d1, d2] = view.nextDraws;
+  const melds = view.melds[view.seat];
+  const nM = melds.length;
+  const c = countsOf(view.hand);
+  const fl = view.flowers[view.seat].map(kindOf);
+  const tsumoFan = (x) => {
+    if (shanten(x, nM) !== -1) return 0;
+    const kinds = [];
+    for (let j = 0; j < 34; j++) for (let n = 0; n < x[j]; n++) kinds.push(j);
+    const sc = scoreHand({ kinds, melds, selfDrawn: true, seatWind: view.seatWind, roundWind: view.roundWind, flowers: fl });
+    return sc && sc.fan >= MIN_FAN ? sc.fan : -1;
+  };
+  const inner = { ...cfg, mc: false, lookahead: false };
+  const top = ranked.slice(0, 6);
+  for (const x of top) {
+    c[x.kind]--;
+    const base0 = handEV(c, melds, view, unseen, inner, env).ev; // nilai tanpa tahu kartu berikutnya (cara hitung sama)
+    c[d1]++;
+    let v = 0;
+    const f1 = tsumoFan(c);
+    if (f1 >= 0) v = 6 * basePay(f1);
+    else {
+      for (let j = 0; j < 34; j++) {
+        if (!c[j]) continue;
+        c[j]--;
+        let w = 0;
+        if (d2 !== null) { c[d2]++; const f2 = tsumoFan(c); c[d2]--; if (f2 >= 0) w = 0.85 * 6 * basePay(f2); }
+        w = Math.max(w, 0.9 * handEV(c, melds, view, unseen, inner, env).ev);
+        if (w > v) v = w;
+        c[j]++;
+      }
+    }
+    c[d1]--;
+    c[x.kind]++;
+    x.score += (cfg.foreseeW ?? 1) * (v - base0);
+  }
+  ranked.sort((a, b) => b.score - a.score);
+}
+
 function turnDecision(view, req, cfg) {
   const o = req.options;
   if (o.tsumo) return { type: 'tsumo' };
@@ -395,6 +436,7 @@ function turnDecision(view, req, cfg) {
     if (after <= now14 && (kg.type === 'concealed' || env.opps.every((x) => x.tenpai < 0.5))) return { type: 'kong', kind: kg.kind };
   }
   const ranked = rankDiscards(view, cfg, unseen, env);
+  if (cfg.foreseeW && view.nextDraws && view.nextDraws[0] !== null) foresee(view, cfg, unseen, env, ranked); // bawaan mati: belum terbukti menguatkan
   let choice = ranked[0];
   if (cfg.noise && cfg.rng() < cfg.noise) choice = ranked[Math.floor(cfg.rng() * Math.min(3, ranked.length))];
   return { type: 'discard', tile: pickTile(view, choice.kind) };

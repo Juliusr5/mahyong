@@ -304,9 +304,12 @@ export class Round {
 
   // Data yang boleh dilihat pemain `seat` (tanpa tangan lawan dan urutan dinding).
   // peek: kursi yang tangannya boleh diintip (hanya untuk mode Sulit atas permintaan pemain).
-  viewFor(seat, peek = []) {
+  // nextDraws: kartu yang akan diambil `seat` berikutnya (urutan normal tanpa klaim) — hanya untuk bot pengintip.
+  viewFor(seat, peek = [], wallPeek = false) {
+    const at = (i) => (this.wall[i] !== undefined && kindOf(this.wall[i]) < 34 ? kindOf(this.wall[i]) : null);
     return {
       seat,
+      nextDraws: wallPeek ? [at(3), at(7)] : null,
       peek: Object.fromEntries(peek.filter((p) => p !== seat).map((p) => [p, this.hands[p].slice()])),
       hand: this.hands[seat].slice(),
       drawn: this.turn === seat ? this.drawn : null,

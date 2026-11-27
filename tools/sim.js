@@ -35,7 +35,9 @@ for (let d = 0; played < N; d++) {
         const lv = levels[p.seat];
         const t = performance.now();
         const peek = lv === PEEK ? [1, 2, 3].map((d) => (p.seat + d) % 4).sort(() => rng() - 0.5).slice(0, 2) : [];
-        const a = decide(r.viewFor(p.seat, peek), p, { level: lv, rng, budgetMs: 1e9, mcIters });
+        const v = r.viewFor(p.seat, peek, peek.length > 0);
+        if (process.env.PEEKUNSEEN === '0') v.peekUnseen = false;
+        const a = decide(v, p, { level: lv, rng, budgetMs: 1e9, mcIters });
         stats[lv].ms += performance.now() - t;
         stats[lv].decisions++;
         r.act(p.seat, a);

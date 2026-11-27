@@ -7,8 +7,8 @@ const base = { seatWind: 1, roundWind: 0, flowers: [35] }; // kursi Selatan, bun
 const sc = (h, ctx = {}) => scoreHand({ ...base, kinds: kinds(h), melds: [], ...ctx });
 const keys = (r) => r.items.map((i) => i.key).sort();
 
-test('aturan dasar Singapura: minimal 1 tai, batas 5 tai', () => {
-  assert.equal(MIN_FAN, 1);
+test('aturan dasar: Chicken Hand (0 tai) boleh menang, batas 5 tai', () => {
+  assert.equal(MIN_FAN, 0);
   assert.equal(MAX_FAN, 5);
 });
 test('semua chi + bunga sendiri', () => {
@@ -52,12 +52,15 @@ test('Seven Pairs dan tangan tidak lengkap -> null', () => {
   assert.equal(sc('1199b 2288p 33m 1177z'), null);
   assert.equal(sc('123b 456b 789p 234m 56m'), null);
 });
-test('tangan lengkap tanpa pola bernilai 0 tai', () => {
-  assert.equal(sc('123b 456b 789p 444m 55m', { flowers: [34] }).fan, 0);
+test('tangan lengkap tanpa pola bernilai = Chicken Hand 0 tai', () => {
+  const r = sc('123b 456b 789p 444m 55m', { flowers: [34] });
+  assert.equal(r.fan, 0);
+  assert.deepEqual(keys(r), ['chicken']);
 });
 test('tabel bayar & pembayaran gaya Singapura', () => {
-  assert.equal(basePay(1), 4); assert.equal(basePay(5), 64); assert.equal(basePay(8), 64);
-  assert.equal(Object.keys(PAY_TABLE).length, 5);
+  assert.equal(basePay(0), 2); assert.equal(basePay(1), 4); assert.equal(basePay(5), 64); assert.equal(basePay(8), 64);
+  assert.equal(Object.keys(PAY_TABLE).length, 6);
+  assert.deepEqual(payments(2, 0, 0), [-4, -2, 8, -2]); // chicken hand dari buangan
   // zimo: tiap lawan bayar 2x
   assert.deepEqual(payments(1, null, 2), [-16, 48, -16, -16]);
   // dari buangan: pembuang 2x, lainnya 1x

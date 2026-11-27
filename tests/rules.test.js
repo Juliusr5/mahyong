@@ -166,7 +166,7 @@ test('menang boleh dari buangan pemain di kanan (bukan hanya kiri)', () => {
   assert.equal(r.result.from, 1);
 });
 
-test('tangan lengkap tanpa tai tidak bisa Hu (minimal 1 tai)', () => {
+test('tangan lengkap tanpa tai boleh Hu sebagai Chicken Hand', () => {
   const used = new Set();
   const r = new Round({ dealer: 1 });
   const k5b = kinds('5b')[0];
@@ -184,5 +184,7 @@ test('tangan lengkap tanpa tai tidak bisa Hu (minimal 1 tai)', () => {
   r.phase = 'turn'; r.turn = 1; r.flags = { selfDraw: false };
   r.act(1, { type: 'discard', tile: d });
   const mine = r.pending().find((p) => p.seat === 0);
-  assert.ok(!mine || !mine.options.hu);
+  assert.ok(mine && mine.options.hu, 'chicken hand harus bisa Hu');
+  assert.equal(mine.options.hu.fan, 0);
+  assert.equal(mine.options.hu.items[0].key, 'chicken');
 });

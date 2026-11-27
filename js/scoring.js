@@ -3,15 +3,16 @@
 import { countsOfKinds, suitOf, isDragon, isWind } from './tiles.js';
 import { decompositions, isThirteenOrphans } from './hand.js';
 
-export const MIN_FAN = 1; // minimal 1 tai untuk menang
+export const MIN_FAN = 0; // Chicken Hand (0 tai) boleh menang
 export const MAX_FAN = 5; // batas 5 tai
 // Satu-satunya tempat tabel bayar. Nilai dasar per jumlah tai (berlipat ganda).
-export const PAY_TABLE = { 1: 4, 2: 8, 3: 16, 4: 32, 5: 64 };
-export const basePay = (fan) => PAY_TABLE[Math.min(fan, MAX_FAN)] || 0;
+export const PAY_TABLE = { 0: 2, 1: 4, 2: 8, 3: 16, 4: 32, 5: 64 }; // 0 = Chicken Hand
+export const basePay = (fan) => PAY_TABLE[Math.min(Math.max(0, fan), MAX_FAN)] ?? 0;
 export const UNIT = 'tai';
 
 // Nilai tai tiap pola, juga dipakai halaman Bantuan.
 export const FAN = {
+  chicken: ['Chicken Hand (tanpa tai)', 0],
   pingHu: ['Ping Hu (semua chi, tanpa bunga)', 4],
   allChi: ['Semua chi', 1],
   allPong: ['Semua pong', 2],
@@ -53,6 +54,7 @@ function situationItems(ctx) {
 }
 
 function finish(items) {
+  if (!items.length) items = [item('chicken')]; // tangan lengkap tanpa pola bernilai
   const raw = items.reduce((a, b) => a + b.fan, 0);
   return { fan: Math.min(raw, MAX_FAN), raw, limit: raw >= MAX_FAN, items };
 }
