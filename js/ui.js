@@ -53,23 +53,24 @@ export function render(r, match, ui) {
   // info atas
   $('round-info').innerHTML = `<b>Putaran ${WIND_NAMES[r.roundWind]}</b><br>Ronde ${match.handNo} · ${levelName(ui.level)}`;
   // lawan
+  // lawan: kartu ringkas di baris atas (posisi kiri/atas/kanan sesuai tempat duduk)
   for (const s of [1, 2, 3]) {
-    const melds = r.melds[s].map((m, i) => meldHTML(m, ui.fresh?.meld === `${s}:${i}`)).join('');
-    const fl = r.flowers[s].map((t) => tile(t)).join('');
-    const side = s !== 2;
-    const backs = `<div class="backs" title="${r.hands[s].length} kartu">${r.hands[s].map(() => side ? `<span class="rot">${back()}</span>` : back()).join('')}</div>`;
-    $('opp-' + s).innerHTML = pinfo(r, match, s) + backs +
-      (fl ? `<div class="flowers">${fl}</div>` : '') +
-      `<div class="omelds">${melds}</div>`;
+    const fl = r.flowers[s].length ? ` · ${r.flowers[s].length} bunga` : '';
+    $('opp-' + s).innerHTML = pinfo(r, match, s) + `<div class="pcount">${r.hands[s].length} kartu${fl}</div>`;
   }
-  // sungai buangan
+  // meja: set terbuka lawan lalu buangan, di depan sisi masing-masing
   const lastD = r.discardLog.at(-1);
   for (let s = 0; s < 4; s++) {
-    $('river-' + s).innerHTML = r.discards[s].map((t) => {
+    const wrap = (h) => h; // kartu tetap tegak agar mudah dibaca
+    const melds = s === 0 ? '' : r.melds[s].map((m, i) => {
+      const fresh = ui.fresh?.meld === `${s}:${i}` ? 'flip' : '';
+      const ks = m.concealed ? [-1, m.kind, m.kind, -1] : m.tiles.map(kindOf);
+      return `<span class="rmeld">${ks.map((k) => wrap(k < 0 ? back(fresh) : tileK(k, fresh))).join('')}</span>`;
+    }).join('');
+    $('river-' + s).innerHTML = melds + r.discards[s].map((t) => {
       let cls = '';
       if (lastD && !lastD.claimed && lastD.tile === t) cls = 'last-discard' + (ui.fresh?.discard === t ? ' fresh' : '');
-      const h = tile(t, cls);
-      return s === 1 || s === 3 ? `<span class="rot">${h}</span>` : h;
+      return wrap(tile(t, cls));
     }).join('');
     $('river-' + s).classList.toggle('active', r.phase === 'turn' && r.turn === s);
   }
