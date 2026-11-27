@@ -92,25 +92,24 @@ Bot hanya menerima `view` dari `Round.viewFor(seat)`: tangannya sendiri, semua b
 
 ## Hasil uji kekuatan bot
 
-Format **duplicate**: tiap dinding dimainkan 4 kali dengan kursi diputar, jadi tiap level mendapat kartu yang sama. Keberuntungan saling meniadakan dan selisih kekuatan terlihat jelas. Angka ± adalah galat baku.
+Aturan Singapura. Format **duplicate**: tiap dinding dimainkan 4 kali dengan kursi diputar, jadi tiap level mendapat kartu yang sama. Keberuntungan saling meniadakan dan selisih kekuatan terlihat jelas. Angka ± adalah galat baku.
 
-**Meja campuran** — `node tools/sim.js 1000 101` (Sulit / Sedang / Mudah / Sedang), seri 41,1%:
+**Meja campuran** — `node tools/sim.js 1000 101` (Sulit / Sedang / Mudah / Sedang), seri 15,8%:
 
-| Level | Tingkat menang | Zimo | Kena tembak | Kecik/ronde | Fan menang rata-rata |
+| Level | Tingkat menang | Zimo | Kena tembak | Kecik/ronde | Tai menang rata-rata |
 |---|---|---|---|---|---|
-| Sulit | 18,1% | 4,9% | 6,8% | **+4,33 ± 1,46** | 5,13 |
-| Sedang | 17,9% | 6,2% | 11,9% | +2,21 ± 0,77 | 5,21 |
-| Mudah | 5,1% | 3,5% | 7,6% | −8,74 ± 0,90 | 3,47 |
+| Sulit | 28,6% | 7,4% | 13,3% | **+12,12 ± 2,13** | 2,69 |
+| Sedang | 19,4% | 5,5% | 16,4% | −0,08 ± 1,02 | 2,55 |
+| Mudah | 16,7% | 5,0% | 14,7% | −11,97 ± 1,28 | 1,76 |
 
 **Adu langsung** (1000 ronde masing-masing):
 
-| Pertandingan | Kecik/ronde pemenang | Seri |
+| Pertandingan | Hasil | Seri |
 |---|---|---|
-| Sulit vs Sedang (`LINEUP=sulit,sedang,sulit,sedang`) | Sulit **+1,61 ± 1,00** (kena tembak 8,2% vs 13,0%) | 34,9% |
-| Sedang vs Mudah (`LINEUP=sedang,mudah,sedang,mudah`) | Sedang **+6,86 ± 0,61** | 49,2% |
+| Sulit vs Sedang (`LINEUP=sulit,sedang,sulit,sedang`) | Sulit **+3,59 ± 1,25** Kecik/ronde; menang 23,6% vs 18,9%; kena tembak 12,9% vs 18,6% | 15,1% |
+| Sedang vs Mudah (`LINEUP=sedang,mudah,sedang,mudah`) | Sedang **+6,49 ± 0,83** Kecik/ronde | 18,7% |
 
 Catatan penyetelan:
-- Monte Carlo sebagai penentu utama justru merugikan (−1,26 Kecik/ronde), karena simulasi cepatnya tidak memodelkan klaim lawan. Sekarang MC hanya dipakai untuk memutus pilihan yang nyaris seimbang.
+- Monte Carlo sebagai penentu utama justru merugikan, karena simulasi cepatnya tidak memodelkan klaim lawan. Sekarang MC hanya dipakai untuk memutus pilihan yang nyaris seimbang.
 - Keunggulan Sulit datang dari **lihat dua langkah** (nilai tunggu dan tai sungguhan dihitung sebelum siap) dan pertahanan ringan.
 - Sedang sengaja tidak membaca lawan, sesuai pembagian level.
-- Selisih Sulit–Sedang masih lebih kecil dari Sedang–Mudah; ini yang bisa disetel berikutnya.
