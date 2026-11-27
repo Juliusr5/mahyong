@@ -90,4 +90,13 @@ Bot hanya menerima `view` dari `Round.viewFor(seat)`: tangannya sendiri, semua b
 
 ## Hasil uji kekuatan bot
 
-<!-- HASIL-SIM -->
+`node tools/sim.js 1000 42 60` — 1000 ronde, susunan meja Sulit / Sedang / Mudah / Sedang (kursi dirotasi tiap ronde, semua gaya seimbang). Seri 63,7%.
+
+| Level | Tingkat menang | Zimo | Kena tembak | Rata-rata Kecik/ronde | Rata-rata fan menang | ms/keputusan (Node) |
+|---|---|---|---|---|---|---|
+| Sulit | 10,9% | 5,2% | 3,8% | +2,98 | 5,11 | 1,86 |
+| Sedang | 10,2% | 4,1% | 4,0% | +2,18 | 5,22 | 0,84 |
+| Mudah | 5,0% | 3,5% | 7,5% | −7,34 | 3,38 | 0,28 |
+
+Urutannya sudah benar: Sedang jauh di atas Mudah, dan Sulit di atas Sedang dalam Kecik per ronde serta jarang kena tembak. Selisih Sulit–Sedang masih tipis, dan angka seri masih tinggi karena syarat minimal 3 fan, jadi penyetelan berikutnya ada di sana. Bobot bertahan level Sulit dipilih dari uji 0,15 / 0,4 / 0,7 (0,4 terbaik).
+

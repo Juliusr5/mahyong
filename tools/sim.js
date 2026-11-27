@@ -48,7 +48,7 @@ for (let g = 0; g < N; g++) {
 
 const pct = (a, b) => ((100 * a) / Math.max(1, b)).toFixed(1) + '%';
 console.log(`\n${N} ronde, susunan meja ${LINEUP.join('/')} (kursi dirotasi), seri ${pct(draws, N)}\n`);
-console.log('| Level | Tingkat menang | Zimo | Kena tembak | Rata-rata chip/ronde | Rata-rata fan menang | ms/keputusan |');
+console.log('| Level | Tingkat menang | Zimo | Kena tembak | Rata-rata Kecik/ronde | Rata-rata fan menang | ms/keputusan |');
 console.log('|---|---|---|---|---|---|---|');
 for (const [l, s] of Object.entries(stats)) {
   console.log(`| ${l} | ${pct(s.wins, s.seats)} | ${pct(s.zimo, s.seats)} | ${pct(s.dealIn, s.seats)} | ${(s.chips / s.seats).toFixed(2)} | ${(s.fan / Math.max(1, s.wins)).toFixed(2)} | ${(s.ms / s.decisions).toFixed(2)} |`);
