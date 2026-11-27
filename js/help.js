@@ -84,6 +84,6 @@ export const TUTORIAL = [
   { pos: 'top', sel: '#hand', title: 'Kartumu', text: 'Ini 13–14 kartu di tanganmu, otomatis terurut. Ketuk sekali untuk memilih (kartu terangkat), ketuk lagi untuk membuang.' },
   { pos: 'bottom', sel: '.board', title: 'Meja', text: 'Buangan tiap pemain ada di depan sisinya. Kartu bertanda emas adalah buangan terakhir. Di tengah: angin putaran dan sisa dinding.' },
   { pos: 'top', sel: '#actions', title: 'Aksi', text: 'Tombol Chi, Pong, Kong, Hu, atau Lewati muncul di sini hanya saat aksi itu sah.' },
-  { pos: 'bottom', sel: '#opp-2', title: 'Lawan', text: 'Tiga bot dengan gaya berbeda: Pak Roti agresif, Pak Wawan seimbang, Pak Agus hati-hati. Kapsul emas menunjukkan saldo Kecik.' },
+  { pos: 'bottom', sel: '#opp-2', title: 'Lawan', text: 'Tiga bot dengan gaya berbeda: Pak Agus agresif, Pak Wawan seimbang, Pak Roti hati-hati. Kapsul emas menunjukkan saldo Kecik.' },
   { pos: 'bottom', sel: '#round-info', title: 'Tujuan', text: 'Bentuk 4 set + 1 pasang dengan minimal 3 fan. Nyalakan Petunjuk di Pengaturan kalau butuh saran buangan. Selamat bermain!' },
 ];

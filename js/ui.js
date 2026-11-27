@@ -4,9 +4,9 @@ import { avatarSVG, chipSVG, buildSprite } from './art.js';
 
 export const PLAYERS = [
   { key: 'you', name: 'Kamu', mono: 'K', c1: '#2c7a5c', c2: '#0c3a2a', motif: 'you' },
-  { key: 'roti', name: 'Pak Roti', mono: 'R', c1: '#8c2a25', c2: '#3d0d0b', motif: 'wave', style: 'agresif' },
+  { key: 'roti', name: 'Pak Roti', mono: 'R', c1: '#8c2a25', c2: '#3d0d0b', motif: 'wave', style: 'hati-hati' },
   { key: 'wawan', name: 'Pak Wawan', mono: 'W', c1: '#5a3d86', c2: '#1f1236', motif: 'plum', style: 'seimbang' },
-  { key: 'agus', name: 'Pak Agus', mono: 'A', c1: '#1f5a86', c2: '#0b2136', motif: 'crane', style: 'hati-hati' },
+  { key: 'agus', name: 'Pak Agus', mono: 'A', c1: '#1f5a86', c2: '#0b2136', motif: 'crane', style: 'agresif' },
 ];
 const WIND_CH = '東南西北';
 const $ = (id) => document.getElementById(id);

@@ -472,7 +472,9 @@ function showStats() {
       <div class="stat"><b>${stats.rounds}</b><span>Ronde dimainkan</span></div>
       <div class="stat"><b>${rate}%</b><span>Tingkat menang</span></div>
       <div class="stat"><b>${stats.zimo}</b><span>Menang zimo</span></div>
-      <div class="stat"><b>${stats.maxChips}</b><span>Kecik tertinggi</span></div>
+      <div class="stat"><b>${UI.fmt(stats.maxChips)}</b><span>Kecik tertinggi</span></div>
+      <div class="stat"><b>${stats.wins}</b><span>Total menang</span></div>
+      <div class="stat"><b>${stats.dealtIn}</b><span>Kena tembak</span></div>
     </div>
     <h3>Tangan terbaik</h3>${best}
     <div class="modal-actions"><button class="btn gold" data-m="close">Tutup</button></div>`);
