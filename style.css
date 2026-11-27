@@ -493,3 +493,13 @@ body.big .htile.drawn .tile { box-shadow: 0 0 0 2px rgba(220,192,138,.85), 0 cal
 .center { overflow: hidden; min-height: 0; }
 .me { position: relative; z-index: 2; }
 .me-melds { --w: 22px; }
+
+/* ===== Kartu besar di tengah menyesuaikan ruang (tidak terpotong) ===== */
+.center { container-type: size; justify-content: center; gap: 2px; }
+.big-discard { --w: max(18px, min(calc(var(--rw) * 1.9), calc((100cqh - 58px) / 1.55), calc(100cqw * .45))); }
+.wind-disc { width: min(calc(var(--rw) * 2.4), calc(100cqh - 30px)); height: min(calc(var(--rw) * 2.4), calc(100cqh - 30px)); min-width: 36px; min-height: 36px; }
+.big-cap { font-size: 11px; line-height: 1.2; }
+.big-cap b { font-size: 12px; }
+/* ukuran dasar kartu meja dihitung sekali di .board (bukan ulang di kotak tengah) */
+@property --rw { syntax: '<length>'; inherits: true; initial-value: 16px; }
+@property --s { syntax: '<length>'; inherits: true; initial-value: 260px; }
