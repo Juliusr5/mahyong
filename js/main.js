@@ -17,8 +17,25 @@ const ui = { req: null, resolve: null, selected: null, fresh: null, dealing: fal
 let loopToken = 0;
 
 // ---------- Bot ----------
+// Bot berjalan di Web Worker (UI tidak macet); jatuh ke thread utama kalau worker gagal.
+let worker = null;
+const waiting = new Map();
+let reqId = 0;
+try {
+  worker = new Worker(new URL('./bot/worker.js', import.meta.url), { type: 'module' });
+  worker.onmessage = (e) => { const w = waiting.get(e.data.id); if (w) { waiting.delete(e.data.id); w(e.data.action); } };
+  worker.onerror = () => { worker = null; for (const w of waiting.values()) w(null); waiting.clear(); };
+} catch { worker = null; }
+
 async function botDecide(seat, req) {
-  return decide(round.viewFor(seat), req);
+  const view = round.viewFor(seat);
+  const opts = { level: ui.level, style: UI.PLAYERS[seat].style, budgetMs: 300 };
+  let a = null;
+  if (worker) {
+    const id = ++reqId;
+    a = await new Promise((res) => { waiting.set(id, res); worker.postMessage({ id, view, req: { type: req.type, options: req.options }, opts }); });
+  }
+  return a || decide(view, req, opts);
 }
 
 // ---------- Pemain manusia ----------
