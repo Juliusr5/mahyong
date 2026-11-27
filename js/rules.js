@@ -2,11 +2,14 @@
 // Dipakai sama oleh UI dan simulasi Node.
 import { kindOf, isFlower, makeWall, countsOf } from './tiles.js';
 import { scoreHand, payments, MIN_FAN } from './scoring.js';
+import { shanten } from './hand.js';
 
 export const next = (s) => (s + 1) % 4;
 
 export class Round {
   constructor({ dealer = 0, roundWind = 0, rng = Math.random, wall = null } = {}) {
+    this.rng = rng;
+    this.luck = null; // { seats: [...], chance, depth } — mode Sulit: bot kadang dapat kartu terbaik
     this.dealer = dealer;
     this.roundWind = roundWind;
     this.wall = wall ? wall.slice() : makeWall(rng);
@@ -54,6 +57,7 @@ export class Round {
 
   _draw(s, fromBack) {
     if (!this.wall.length) { this._endDraw(); return false; }
+    if (!fromBack) this._luckySwap(s);
     let t = fromBack ? this.wall.pop() : this.wall.shift();
     while (isFlower(kindOf(t))) {
       this.flowers[s].push(t);
@@ -70,6 +74,30 @@ export class Round {
     this._opts = null;
     this.log.push({ seat: s, type: 'draw' });
     return true;
+  }
+
+  // "Bot beruntung": tukar kartu teratas dinding dengan kartu terbaik bagi bot dari beberapa kartu berikutnya.
+  _luckySwap(s) {
+    const L = this.luck;
+    if (!L || !L.seats.includes(s) || (this.rng || Math.random)() >= L.chance) return;
+    const nM = this.melds[s].length;
+    const c = countsOf(this.hands[s]);
+    let best = -1, bestKey = Infinity;
+    const n = Math.min(L.depth, this.wall.length);
+    for (let i = 0; i < n; i++) {
+      const k = kindOf(this.wall[i]);
+      if (k >= 34) continue;
+      c[k]++;
+      let sh = shanten(c, nM);
+      if (sh === -1) {
+        const sc = this.scoreWin(s, this.wall[i], false, {}); // kartu belum di tangan
+        if (!sc) sh = 0;
+      }
+      c[k]--;
+      const key = sh * 100 + i; // shanten terkecil, lalu yang paling atas
+      if (key < bestKey) { bestKey = key; best = i; }
+    }
+    if (best > 0) [this.wall[0], this.wall[best]] = [this.wall[best], this.wall[0]];
   }
 
   // Skor tangan menang (fan >= MIN_FAN); null jika tidak sah atau fan kurang.

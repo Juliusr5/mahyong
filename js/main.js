@@ -374,6 +374,8 @@ function startRound() {
     const seat = 1 + Math.floor(Math.random() * 3);
     const others = [1, 2, 3].filter((s) => s !== seat);
     round.cheat = { seat, peek: [0, others[Math.floor(Math.random() * 2)]] };
+    // bot beruntung: 50% peluang dapat kartu terbaik dari 8 kartu teratas dinding (terukur: peluang menangmu ~16% -> ~10%)
+    round.luck = { seats: [1, 2, 3], chance: 0.5, depth: 8 };
   }
   ui.dealing = true;
   draw();

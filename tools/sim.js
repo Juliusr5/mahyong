@@ -17,6 +17,8 @@ const wallRng = mulberry32(seed);
 const rng = mulberry32(seed * 7919 + 1);
 const LINEUP = (process.env.LINEUP || 'sulit,sedang,mudah,sedang').split(',');
 const PEEK = process.env.PEEK || '';
+// PEEKT=nama level 'pemain' yang tangannya diintip semua bot lain (meniru mode Sulit vs manusia)
+const PEEKT = process.env.PEEKT || '';
 const stats = {};
 for (const l of new Set(LINEUP)) stats[l] = { seats: 0, wins: 0, zimo: 0, dealIn: 0, chips: 0, fan: 0, ms: 0, decisions: 0, perDeal: [] };
 
@@ -28,13 +30,16 @@ for (let d = 0; played < N; d++) {
   const dealSum = {};
   for (let rot = 0; rot < 4 && played < N; rot++, played++) {
     const levels = LINEUP.map((_, i) => LINEUP[(i + rot) % 4]);
-    const r = new Round({ dealer, roundWind, wall }).start();
+    const r = new Round({ dealer, roundWind, wall, rng }).start();
+    // LUCK="peluang,kedalaman": kursi yang bukan PEEKT jadi bot beruntung
+    if (process.env.LUCK) { const [ch, dp] = process.env.LUCK.split(',').map(Number); r.luck = { seats: levels.map((l, i) => (l !== PEEKT ? i : -1)).filter((i) => i >= 0), chance: ch, depth: dp }; }
     let guard = 0;
     while (r.phase !== 'end') {
       for (const p of r.pending()) {
         const lv = levels[p.seat];
         const t = performance.now();
-        const peek = lv === PEEK ? [1, 2, 3].map((d) => (p.seat + d) % 4).sort(() => rng() - 0.5).slice(0, 2) : [];
+        let peek = lv === PEEK ? [1, 2, 3].map((d) => (p.seat + d) % 4).sort(() => rng() - 0.5).slice(0, 2) : [];
+        if (PEEKT && lv !== PEEKT) peek = levels.map((l, i) => (l === PEEKT ? i : -1)).filter((i) => i >= 0);
         const v = r.viewFor(p.seat, peek, peek.length > 0);
         if (process.env.PEEKUNSEEN === '0') v.peekUnseen = false;
         const a = decide(v, p, { level: lv, rng, budgetMs: 1e9, mcIters });

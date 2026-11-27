@@ -90,6 +90,14 @@ Bot hanya menerima `view` dari `Round.viewFor(seat)`: tangannya sendiri, semua b
 - **Monte Carlo (Sulit):** untuk kandidat yang nyaris seimbang, kartu yang belum terlihat diacak ratusan kali dalam batas ±300 ms di Web Worker.
 - **Level:** Mudah (efisiensi dasar, sedikit salah acak, jarang bertahan, klaim sembarangan), Sedang (efisiensi + mengejar nilai tangan, tanpa membaca lawan), Sulit (semua fitur).
 
+## Mode Sulit (curang, atas permintaan)
+
+Selain otak bot terkuat, mode Sulit sengaja diberi keunggulan:
+- **Bot beruntung:** saat mengambil kartu, tiap bot punya peluang 50% mendapat kartu terbaik dari 8 kartu teratas dinding (`round.luck` di `js/main.js`).
+- **Bot pengintip:** tiap ronde satu bot acak tahu tanganmu dan tangan satu bot lain.
+
+Bot tidak bekerja sama satu sama lain. Uji 600 ronde (pemain pengganti vs 3 bot Sulit, `PEEKT=h LUCK=0.5,8 LINEUP=h,sulit,sulit,sulit`): peluang menang pemain turun dari 16,8% ke 9,8%, dan Kecik pemain per ronde dari −7,8 ke −17,4.
+
 ## Hasil uji kekuatan bot
 
 Aturan Singapura. Format **duplicate**: tiap dinding dimainkan 4 kali dengan kursi diputar, jadi tiap level mendapat kartu yang sama. Keberuntungan saling meniadakan dan selisih kekuatan terlihat jelas. Angka ± adalah galat baku.

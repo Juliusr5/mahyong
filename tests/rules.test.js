@@ -188,3 +188,22 @@ test('tangan lengkap tanpa tai boleh Hu sebagai Chicken Hand', () => {
   assert.equal(mine.options.hu.fan, 0);
   assert.equal(mine.options.hu.items[0].key, 'chicken');
 });
+
+test('bot beruntung mendapat kartu terbaik dari beberapa kartu teratas dinding', () => {
+  const used = new Set();
+  const r = new Round({ dealer: 0, rng: () => 0 });
+  r.hands = [
+    idsFor(kinds('111222333p 999m 1z'), used),
+    idsFor(kinds('34b 789p 123m 456m 77z'), used), // menunggu 2b atau 5b
+    idsFor(kinds('678p 678m 22z 666z 4z'), used),
+    idsFor(kinds('1235679m 11z 2z 3z 4z'), used),
+  ];
+  const k5b = kinds('5b')[0];
+  const good = idsFor([k5b], used)[0];
+  const rest = r.wall.filter((t) => !used.has(t) && kindOf(t) < 34 && kindOf(t) !== k5b && kindOf(t) !== k5b - 3);
+  r.wall = [...rest.slice(0, 5), good, ...rest.slice(5)];
+  r.luck = { seats: [1], chance: 1, depth: 8 };
+  r._draw(1, false);
+  assert.equal(r.drawn, good);
+  assert.ok(r.turnOptions().tsumo);
+});
