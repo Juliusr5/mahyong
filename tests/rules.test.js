@@ -141,3 +141,48 @@ test('rotasi bandar dan putaran angin', () => {
   applyResult(m, { type: 'win', winner: 1, payments: [0, 0, 0, 0] });
   assert.ok(m.over);
 });
+
+test('menang boleh dari buangan pemain di kanan (bukan hanya kiri)', () => {
+  // pemain 1 (kanan dari pemain 0) membuang 5 bambu; pemain 0 menunggu 5 bambu
+  const used = new Set();
+  const r = new Round({ dealer: 1 });
+  const k5b = kinds('5b')[0];
+  const d = idsFor([k5b], used)[0];
+  r.hands = [
+    idsFor(kinds('34b 789p 123m 456m 77z'), used),  // 3 fan: semua chi + tertutup + tanpa bunga
+    idsFor(kinds('111222333p 999m 1z'), used),
+    idsFor(kinds('678p 678m 22z 666z 47z'), used),
+    idsFor(kinds('1234567m 11z 2z 3z 4z 5z'), used),
+  ];
+  r.hands[1].push(d);
+  r.wall = r.wall.filter((t) => !used.has(t) && kindOf(t) < 34);
+  r.phase = 'turn'; r.turn = 1; r.flags = { selfDraw: false };
+  r.act(1, { type: 'discard', tile: d });
+  const mine = r.pending().find((p) => p.seat === 0);
+  assert.ok(mine && mine.options.hu, 'pemain 0 harus bisa Hu dari buangan pemain kanan');
+  assert.ok(!mine.options.chi, 'chi dari pemain kanan tidak boleh');
+  for (const p of r.pending()) r.act(p.seat, p.seat === 0 ? { type: 'hu' } : { type: 'pass' });
+  assert.equal(r.result.winner, 0);
+  assert.equal(r.result.from, 1);
+});
+
+test('tangan lengkap tapi kurang dari 3 fan tidak bisa Hu (aturan Hong Kong)', () => {
+  const used = new Set();
+  const r = new Round({ dealer: 1 });
+  const k5b = kinds('5b')[0];
+  const d = idsFor([k5b], used)[0];
+  r.hands = [
+    idsFor(kinds('34b 789p 123m 456m 88m'), used),
+    idsFor(kinds('111222333p 999m 1z'), used),
+    idsFor(kinds('678p 678m 22z 666z 47z'), used),
+    idsFor(kinds('1234567m 11z 2z 3z 4z 5z'), used),
+  ];
+  r.hands[1].push(d);
+  r.flowers[0] = [136]; // punya bunga bukan miliknya -> kehilangan fan "tanpa bunga"
+  used.add(136);
+  r.wall = r.wall.filter((t) => !used.has(t) && kindOf(t) < 34);
+  r.phase = 'turn'; r.turn = 1; r.flags = { selfDraw: false };
+  r.act(1, { type: 'discard', tile: d });
+  const mine = r.pending().find((p) => p.seat === 0);
+  assert.ok(!mine || !mine.options.hu);
+});
