@@ -7,8 +7,8 @@ import { dangerMap } from './danger.js';
 
 export const LEVELS = {
   mudah: { plans: false, mc: false, defense: 0.12, noise: 0.15, naiveClaims: true, claimMargin: 1.08, claimAdd: 0.5, claimDanger: 1 },
-  sedang: { plans: true, mc: false, defense: 0.35, noise: 0, naiveClaims: false, claimMargin: 1.08, claimAdd: 0.5, claimDanger: 1 },
-  sulit: { plans: true, mc: true, defense: 0.4, noise: 0, naiveClaims: false, claimMargin: 1.08, claimAdd: 0.5, claimDanger: 1 },
+  sedang: { plans: true, mc: false, defense: 0, noise: 0, naiveClaims: false, claimMargin: 1.08, claimAdd: 0.5, claimDanger: 1 },
+  sulit: { plans: true, mc: true, mcWeight: 0.15, lookahead: true, defense: 0.15, noise: 0, naiveClaims: false, claimMargin: 1.08, claimAdd: 0.5, claimDanger: 1 },
 };
 export const STYLES = {
   agresif: { defense: 0.75, claim: 0.92 },
@@ -123,7 +123,25 @@ function tenpaiWaits(c, melds, view, unseen, fn) {
   return out;
 }
 
-// EV (dalam chip) dari tangan 13-ekuivalen: maksimum atas semua rencana.
+// Nilai tangan siap: peluang menang per giliran dari kartu tunggu yang fannya cukup.
+function tenpaiEV(c, melds, view, unseen, fn, U, T, env, pid = '') {
+  const key = env.memo ? c.join('') + '|' + T + '|' + pid : null;
+  if (key && env.memo.has(key)) return env.memo.get(key);
+  const waits = tenpaiWaits(c, melds, view, unseen, fn);
+  let qD = 0, qR = 0, vD = 0, vR = 0, uke = 0;
+  for (const w of waits) {
+    uke += w.n;
+    if (w.tsumo) { qD += w.n / U; vD += (w.n / U) * 3 * basePay(w.tsumo); }
+    if (w.ron) { qR += (w.n / U) * 0.45; vR += (w.n / U) * 0.45 * 2 * basePay(w.ron); }
+  }
+  const pw = winProb(0, 0, 0, qD, qR, T, env.lambda);
+  const tot = qD + 3 * qR;
+  const r = { ev: tot > 0 ? pw * (vD + 3 * vR) / tot : 0, uke };
+  if (key) env.memo.set(key, r);
+  return r;
+}
+
+// EV (dalam Kecik) dari tangan 13-ekuivalen: maksimum atas semua rencana.
 export function handEV(c, melds, view, unseen, cfg, env) {
   const U = Math.max(1, unseen.reduce((a, b) => a + b, 0));
   const T = Math.max(1, Math.ceil(view.wallCount / 4));
@@ -135,18 +153,34 @@ export function handEV(c, melds, view, unseen, cfg, env) {
     if (s > 5) continue;
     let ev;
     let uke = 0;
+    const fnT = p.fn === plans[0].fn ? (x, n) => shanten(x, n) : p.fn;
     if (s === 0) {
-      const waits = tenpaiWaits(c, melds, view, unseen, p.fn === plans[0].fn ? (x, n) => shanten(x, n) : p.fn);
-      // tiap jenis tunggu: peluang per giliran via ambil sendiri & buangan
-      let qD = 0, qR = 0, vD = 0, vR = 0;
-      for (const w of waits) {
-        uke += w.n;
-        if (w.tsumo) { qD += w.n / U; vD += (w.n / U) * 3 * basePay(w.tsumo); }
-        if (w.ron) { qR += (w.n / U) * 0.45; vR += (w.n / U) * 0.45 * 2 * basePay(w.ron); }
+      const r = tenpaiEV(c, melds, view, unseen, fnT, U, T, env, p.id);
+      ev = r.ev;
+      uke = r.uke;
+    } else if (s === 1 && cfg.lookahead) {
+      // Lihat dua langkah: tiap kartu yang membuat siap -> buangan terbaik -> nilai tunggu sebenarnya
+      let Q = 0, V = 0;
+      const Tafter = Math.max(1, Math.round(T * 0.6));
+      for (let k = 0; k < 34; k++) {
+        if (!unseen[k] || c[k] >= 4) continue;
+        c[k]++;
+        if (fnT(c, melds.length) === 0) {
+          uke += unseen[k];
+          let bestV = 0;
+          for (let j = 0; j < 34; j++) {
+            if (!c[j]) continue;
+            c[j]--;
+            if (fnT(c, melds.length) === 0) bestV = Math.max(bestV, tenpaiEV(c, melds, view, unseen, fnT, U, Tafter, env, p.id).ev);
+            c[j]++;
+          }
+          Q += unseen[k] / U;
+          V += (unseen[k] / U) * bestV;
+        }
+        c[k]--;
       }
-      const pw = winProb(0, 0, 0, qD, qR, T, env.lambda);
-      const tot = qD + 3 * qR;
-      ev = tot > 0 ? pw * (vD + 3 * vR) / tot : 0;
+      const reach = 1 - Math.pow(1 - Q, T * (p.pairs || p.orphans ? 1 : 1.4));
+      ev = Q > 0 ? reach * (V / Q) : 0;
     } else {
       for (let k = 0; k < 34; k++) {
         if (!unseen[k] || c[k] >= 4) continue;
@@ -238,7 +272,7 @@ function monteCarlo(cands, c, melds, view, unseen, cfg, env) {
 function envFor(view, unseen) {
   const dm = dangerMap(view, unseen);
   const lambda = Math.min(0.2, 0.012 + dm.opps.reduce((a, o) => a + o.tenpai * 0.11, 0));
-  return { ...dm, lambda };
+  return { ...dm, lambda, memo: new Map() };
 }
 
 export function rankDiscards(view, cfg, unseen = unseenCounts(view), env = envFor(view, unseen)) {
@@ -255,7 +289,7 @@ export function rankDiscards(view, cfg, unseen = unseenCounts(view), env = envFo
   }
   if (cfg.mc && out.length > 1) {
     out.sort((a, b) => b.ev - a.ev);
-    const top = out.filter((x) => x.shanten <= 2 && x.ev >= out[0].ev * 0.6).slice(0, 5);
+    const top = out.filter((x) => x.shanten <= 2 && x.ev >= out[0].ev * 0.9).slice(0, 4);
     if (top.length > 1) {
       monteCarlo(top, c, melds, view, unseen, cfg, env);
       // gabungkan estimasi simulasi dengan estimasi analitik

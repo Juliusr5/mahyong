@@ -35,7 +35,7 @@ Uji kekuatan bot (tanpa tampilan):
 node tools/sim.js 1000
 ```
 
-Argumen: `[jumlah ronde] [seed] [iterasi Monte Carlo per keputusan]`.
+Argumen: `[jumlah ronde] [seed] [iterasi Monte Carlo per keputusan]`. Env opsional: `LINEUP=sulit,sedang,sulit,sedang` untuk adu langsung, `TUNE='{"sulit":{"defense":0.3}}'` untuk mencoba setelan.
 
 ## Mengaktifkan GitHub Pages
 
@@ -85,18 +85,31 @@ Bot hanya menerima `view` dari `Round.viewFor(seat)`: tangannya sendiri, semua b
 - **Klaim:** chi/pong/kong hanya kalau EV setelah klaim lebih tinggi dari EV tetap tertutup.
 - **Membaca lawan:** peluang siap per lawan (jumlah buangan, set terbuka, perubahan pola buangan) dan peluang tiap jenis kartu jadi tunggu (buangan lawan, suji, kartu yang sudah habis terlihat, indikasi satu jenis / semua pong).
 - **Serang vs bertahan:** skor = EV serangan − bobot × risiko kena tembak.
-- **Monte Carlo (Sulit):** untuk keputusan yang selisihnya tipis, kartu yang belum terlihat diacak ratusan kali dalam batas ±300 ms di Web Worker.
-- **Level:** Mudah (efisiensi dasar, sedikit salah acak, jarang bertahan, klaim sembarangan), Sedang (+ mengejar nilai tangan), Sulit (semua fitur).
+- **Lihat dua langkah (Sulit):** saat kurang satu kartu untuk siap, tiap kartu yang mungkin diambil dicoba, lalu buangan terbaik berikutnya dan fan nyata tiap kartu tunggu dihitung.
+- **Monte Carlo (Sulit):** untuk kandidat yang nyaris seimbang, kartu yang belum terlihat diacak ratusan kali dalam batas ±300 ms di Web Worker.
+- **Level:** Mudah (efisiensi dasar, sedikit salah acak, jarang bertahan, klaim sembarangan), Sedang (efisiensi + mengejar nilai tangan, tanpa membaca lawan), Sulit (semua fitur).
 
 ## Hasil uji kekuatan bot
 
-`node tools/sim.js 1000 42 60` — 1000 ronde, susunan meja Sulit / Sedang / Mudah / Sedang (kursi dirotasi tiap ronde, semua gaya seimbang). Seri 63,7%.
+Format **duplicate**: tiap dinding dimainkan 4 kali dengan kursi diputar, jadi tiap level mendapat kartu yang sama. Keberuntungan saling meniadakan dan selisih kekuatan terlihat jelas. Angka ± adalah galat baku.
 
-| Level | Tingkat menang | Zimo | Kena tembak | Rata-rata Kecik/ronde | Rata-rata fan menang | ms/keputusan (Node) |
-|---|---|---|---|---|---|---|
-| Sulit | 10,9% | 5,2% | 3,8% | +2,98 | 5,11 | 1,86 |
-| Sedang | 10,2% | 4,1% | 4,0% | +2,18 | 5,22 | 0,84 |
-| Mudah | 5,0% | 3,5% | 7,5% | −7,34 | 3,38 | 0,28 |
+**Meja campuran** — `node tools/sim.js 1000 101` (Sulit / Sedang / Mudah / Sedang), seri 41,1%:
 
-Urutannya sudah benar: Sedang jauh di atas Mudah, dan Sulit di atas Sedang dalam Kecik per ronde serta jarang kena tembak. Selisih Sulit–Sedang masih tipis, dan angka seri masih tinggi karena syarat minimal 3 fan, jadi penyetelan berikutnya ada di sana. Bobot bertahan level Sulit dipilih dari uji 0,15 / 0,4 / 0,7 (0,4 terbaik).
+| Level | Tingkat menang | Zimo | Kena tembak | Kecik/ronde | Fan menang rata-rata |
+|---|---|---|---|---|---|
+| Sulit | 18,1% | 4,9% | 6,8% | **+4,33 ± 1,46** | 5,13 |
+| Sedang | 17,9% | 6,2% | 11,9% | +2,21 ± 0,77 | 5,21 |
+| Mudah | 5,1% | 3,5% | 7,6% | −8,74 ± 0,90 | 3,47 |
 
+**Adu langsung** (1000 ronde masing-masing):
+
+| Pertandingan | Kecik/ronde pemenang | Seri |
+|---|---|---|
+| Sulit vs Sedang (`LINEUP=sulit,sedang,sulit,sedang`) | Sulit **+1,61 ± 1,00** (kena tembak 8,2% vs 13,0%) | 34,9% |
+| Sedang vs Mudah (`LINEUP=sedang,mudah,sedang,mudah`) | Sedang **+6,86 ± 0,61** | 49,2% |
+
+Catatan penyetelan:
+- Monte Carlo sebagai penentu utama justru merugikan (−1,26 Kecik/ronde), karena simulasi cepatnya tidak memodelkan klaim lawan. Sekarang MC hanya dipakai untuk memutus pilihan yang nyaris seimbang.
+- Keunggulan Sulit datang dari **lihat dua langkah** (nilai tunggu dan fan sungguhan dihitung sebelum siap) dan pertahanan ringan.
+- Sedang sengaja tidak membaca lawan, sesuai pembagian level.
+- Selisih Sulit–Sedang masih lebih kecil dari Sedang–Mudah; ini yang bisa disetel berikutnya.
