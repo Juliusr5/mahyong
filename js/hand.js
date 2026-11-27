@@ -38,7 +38,7 @@ export function isThirteenOrphans(c) {
 
 export function isWinningShape(c, nMelds) {
   if (total(c) !== 14 - 3 * nMelds) return false;
-  if (nMelds === 0 && (isSevenPairs(c) || isThirteenOrphans(c))) return true;
+  if (nMelds === 0 && isThirteenOrphans(c)) return true; // gaya Singapura: Seven Pairs tidak sah
   return decompositions(c, 4 - nMelds).length > 0;
 }
 
@@ -133,7 +133,7 @@ export function shantenOrphans(c) {
 
 export function shanten(c, nMelds) {
   let s = shantenStd(c, nMelds);
-  if (nMelds === 0) s = Math.min(s, shantenPairs(c), shantenOrphans(c));
+  if (nMelds === 0) s = Math.min(s, shantenOrphans(c));
   return s;
 }
 

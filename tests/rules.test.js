@@ -149,7 +149,7 @@ test('menang boleh dari buangan pemain di kanan (bukan hanya kiri)', () => {
   const k5b = kinds('5b')[0];
   const d = idsFor([k5b], used)[0];
   r.hands = [
-    idsFor(kinds('34b 789p 123m 456m 77z'), used),  // 3 fan: semua chi + tertutup + tanpa bunga
+    idsFor(kinds('34b 789p 123m 456m 77z'), used),  // semua chi -> tai cukup
     idsFor(kinds('111222333p 999m 1z'), used),
     idsFor(kinds('678p 678m 22z 666z 47z'), used),
     idsFor(kinds('1234567m 11z 2z 3z 4z 5z'), used),
@@ -166,16 +166,16 @@ test('menang boleh dari buangan pemain di kanan (bukan hanya kiri)', () => {
   assert.equal(r.result.from, 1);
 });
 
-test('tangan lengkap tapi kurang dari 3 fan tidak bisa Hu (aturan Hong Kong)', () => {
+test('tangan lengkap tanpa tai tidak bisa Hu (minimal 1 tai)', () => {
   const used = new Set();
   const r = new Round({ dealer: 1 });
   const k5b = kinds('5b')[0];
   const d = idsFor([k5b], used)[0];
   r.hands = [
-    idsFor(kinds('34b 789p 123m 456m 88m'), used),
+    idsFor(kinds('34b 789p 123m 444m 88m'), used), // chi+pong campur, tanpa pola -> 0 tai
     idsFor(kinds('111222333p 999m 1z'), used),
     idsFor(kinds('678p 678m 22z 666z 47z'), used),
-    idsFor(kinds('1234567m 11z 2z 3z 4z 5z'), used),
+    idsFor(kinds('1235679m 11z 2z 3z 4z 5z'), used),
   ];
   r.hands[1].push(d);
   r.flowers[0] = [136]; // punya bunga bukan miliknya -> kehilangan fan "tanpa bunga"

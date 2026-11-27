@@ -17,7 +17,7 @@ test('hampir menang tapi tidak sah', () => {
 });
 test('seven pairs', () => {
   assert.ok(isSevenPairs(counts('1199b 2288p 33m 1177z')));
-  assert.ok(isWinningShape(counts('1199b 2288p 33m 1177z'), 0));
+  assert.ok(!isWinningShape(counts('1199b 2288p 33m 1177z'), 0)); // gaya Singapura: tidak sah
   assert.ok(!isSevenPairs(counts('1111b 2288p 33m 1177z')));
   assert.ok(!isWinningShape(counts('1199b 2288p 33m 1177z'), 1));
 });
@@ -32,7 +32,7 @@ test('shanten', () => {
   assert.equal(shanten(counts('123b 456b 789p 111m 5z'), 0), 0);
   assert.equal(shanten(counts('123b 456b 789p 11m 57z'), 0), 1);
   assert.equal(shanten(counts('19b 19p 19m 1234567z'), 0), 0);
-  assert.equal(shanten(counts('1199b 2288p 33m 117z'), 0), 0);
+
   assert.equal(shantenStd(counts('123p 5z'), 3), 0);
   assert.equal(shantenStd(counts('123b 456b 789p 111m 5z'), 0, { noChi: true }) > 0, true);
 });

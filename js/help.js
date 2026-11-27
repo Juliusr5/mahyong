@@ -3,8 +3,7 @@ import { FAN, PAY_TABLE, MIN_FAN, MAX_FAN } from './scoring.js';
 
 // Contoh tangan per pola (notasi: b bambu, p lingkaran, m karakter, z kehormatan 1-7 = T S B U Merah Hijau Putih)
 const EX = {
-  zimo: '123b 456p 789m 234m 55p',
-  concealed: '123b 456p 789m 234m 55p',
+  pingHu: '123b 456p 789m 234m 55p',
   allChi: '123b 456b 789p 234m 55m',
   allPong: '111b 999p 333m 555z 77p',
   mixed: '123b 456b 789b 111z 99b',
@@ -18,12 +17,10 @@ const EX = {
   bigWinds: '111z 222z 333z 444z 99b',
   allHonors: '111z 222z 555z 666z 77z',
   orphans: '19b 19p 19m 12345677z',
-  sevenPairs: '11b 55b 22p 88p 33m 11z 77z',
 };
 const NOTE = {
-  zimo: 'Menang dengan kartu yang kamu ambil sendiri dari dinding.',
-  concealed: 'Tanpa set terbuka (kong tertutup boleh), menang dari buangan lawan.',
-  allChi: 'Keempat set berupa urutan (chi).',
+  pingHu: 'Keempat set chi, tanpa bunga/musim sama sekali, pasangan bukan naga atau angin bernilai.',
+  allChi: 'Keempat set berupa urutan (chi), tapi ada bunga atau pasangan bernilai.',
   allPong: 'Keempat set berupa pong/kong.',
   mixed: 'Satu jenis angka saja ditambah kartu kehormatan.',
   pure: 'Seluruh tangan satu jenis angka, tanpa kehormatan.',
@@ -36,9 +33,7 @@ const NOTE = {
   bigWinds: 'Pong keempat angin (tangan batas).',
   allHonors: 'Seluruh tangan kartu kehormatan (tangan batas).',
   orphans: 'Satu dari tiap 1, 9, angin, naga + satu kembaran (tangan batas).',
-  sevenPairs: 'Tujuh pasang berbeda, harus tertutup.',
   flower: 'Tiap bunga/musim bernomor sama dengan kursimu (Timur 1, Selatan 2, Barat 3, Utara 4).',
-  noFlower: 'Tidak punya bunga/musim sama sekali.',
   lastTile: 'Menang dengan kartu terakhir dinding (atau buangan terakhir).',
   kongRep: 'Menang dengan kartu pengganti setelah kong.',
   robKong: 'Menang dengan kartu yang dipakai lawan untuk kong tambahan.',
@@ -55,9 +50,9 @@ function kindsOf(str) {
 
 export function helpHTML(tileK) {
   const ex = (s) => `<div class="help-ex">${kindsOf(s).map((k) => tileK(k)).join('')}</div>`;
-  const pay = Object.entries(PAY_TABLE).map(([f, v]) => `<li><span>${f} fan</span><b>${v}</b></li>`).join('');
+  const pay = Object.entries(PAY_TABLE).map(([f, v]) => `<li><span>${f} tai</span><b>${v} Kecik</b></li>`).join('');
   const fans = Object.entries(FAN).map(([key, [name, fan]]) =>
-    `<div class="help-fan"><span>${name}</span><b>${fan >= MAX_FAN ? 'batas (10)' : '+' + fan}</b></div>
+    `<div class="help-fan"><span>${name}</span><b>${fan >= MAX_FAN ? 'batas (' + MAX_FAN + ')' : '+' + fan}</b></div>
      <p style="margin:2px 0;color:var(--muted)">${NOTE[key] || ''}</p>${EX[key] ? ex(EX[key]) : ''}`).join('');
   return `<h2>Bantuan</h2>
   <h3>Kartu</h3>
@@ -68,14 +63,14 @@ export function helpHTML(tileK) {
   <h3>Mengambil buangan</h3>
   <p><b>Pong</b> (3 kembar) dan <b>Kong</b> (4 kembar) dari pemain mana saja. <b>Chi</b> (urutan 3 kartu sejenis) hanya dari pemain di kirimu. <b>Hu</b> dari siapa saja. Prioritas: Hu &gt; Pong/Kong &gt; Chi. Tombol hanya muncul kalau aksinya sah.</p>
   <h3>Cara menang</h3>
-  <p>4 set + 1 pasang, atau tangan khusus Seven Pairs / Thirteen Orphans, dengan minimal <b>${MIN_FAN} fan</b>. Kalau fan kurang, tombol Hu tidak muncul — kejar pong naga, campur satu jenis, atau semua pong.</p>
+  <p>4 set + 1 pasang (atau Thirteen Orphans) dengan minimal <b>${MIN_FAN} tai</b>. Menang boleh dari buangan pemain mana saja. Kalau tangan lengkap tapi tidak punya tai, tombol Hu tidak muncul — contoh tai termudah: semua chi, pong naga, pong angin kursi/putaran, atau bunga sesuai kursi. Seven Pairs tidak berlaku di gaya Singapura.</p>
   ${ex('123b 456p 789m 555z 11m')}
   <h3>Cara bayar</h3>
-  <p>Nilai dasar menurut fan (maksimal ${MAX_FAN} fan):</p>
+  <p>Nilai dasar menurut tai (maksimal ${MAX_FAN} tai):</p>
   <ul class="fan-list">${pay}</ul>
-  <p>Menang dari buangan: pembuang membayar <b>2×</b> nilai dasar. Zimo: ketiga lawan masing-masing membayar <b>1×</b>. Seri (dinding habis): tidak ada yang membayar. Bandar tetap bandar kalau menang atau seri.</p>
+  <p>Menang dari buangan: pembuang membayar <b>2×</b> nilai dasar, dua pemain lain masing-masing <b>1×</b>. Zimo: ketiga lawan masing-masing membayar <b>2×</b>. Seri (dinding habis): tidak ada yang membayar. Bandar tetap bandar kalau menang atau seri.</p>
   <p style="color:var(--muted)">Kecik hanya mainan — tanpa uang sungguhan.</p>
-  <h3>Daftar fan</h3>
+  <h3>Daftar tai</h3>
   ${fans}
   <div class="modal-actions"><button class="btn" data-m="tutorial">Ulangi tutorial</button><button class="btn gold" data-m="close">Tutup</button></div>`;
 }
@@ -85,5 +80,5 @@ export const TUTORIAL = [
   { pos: 'bottom', sel: '.board', title: 'Meja', text: 'Buangan tiap pemain ada di depan sisinya. Kartu bertanda emas adalah buangan terakhir. Di tengah: angin putaran dan sisa dinding.' },
   { pos: 'top', sel: '#actions', title: 'Aksi', text: 'Tombol Chi, Pong, Kong, Hu, atau Lewati muncul di sini hanya saat aksi itu sah.' },
   { pos: 'bottom', sel: '#opp-2', title: 'Lawan', text: 'Tiga bot dengan gaya berbeda: Pak Agus agresif, Pak Wawan seimbang, Pak Roti hati-hati. Kapsul emas menunjukkan saldo Kecik.' },
-  { pos: 'bottom', sel: '#round-info', title: 'Tujuan', text: 'Bentuk 4 set + 1 pasang dengan minimal 3 fan. Nyalakan Petunjuk di Pengaturan kalau butuh saran buangan. Selamat bermain!' },
+  { pos: 'bottom', sel: '#round-info', title: 'Tujuan', text: 'Bentuk 4 set + 1 pasang dengan minimal 1 tai. Nyalakan Petunjuk di Pengaturan kalau butuh saran buangan. Selamat bermain!' },
 ];

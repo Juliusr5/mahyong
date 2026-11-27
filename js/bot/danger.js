@@ -35,8 +35,8 @@ export function readOpponent(view, o, unseen) {
   const pongs = open.filter((m) => m.type !== 'chi').length;
   const allPong = pongs >= 2 && !open.some((m) => m.type === 'chi');
 
-  let fan = 3 + (flush >= 0 ? 2 : 0) + open.filter((m) => m.type !== 'chi' && (isDragon(m.kind) || m.kind === 27 + view.roundWind)).length + (allPong ? 1 : 0);
-  const loss = 2 * basePay(Math.min(10, fan));
+  let fan = 1 + (flush >= 0 ? 2 : 0) + open.filter((m) => m.type !== 'chi' && (isDragon(m.kind) || m.kind === 27 + view.roundWind)).length + (allPong ? 1 : 0);
+  const loss = 2 * basePay(Math.min(5, fan));
 
   // bobot tiap jenis sebagai kartu tunggu
   const w = new Array(34).fill(0);

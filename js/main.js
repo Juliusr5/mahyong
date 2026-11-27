@@ -140,7 +140,7 @@ function computeHints(req) {
   const view = round.viewFor(0);
   if (req.type !== 'turn') {
     const o = req.options;
-    UI.setHint(o.hu ? 'Petunjuk: kamu bisa <b>Hu</b> sekarang!' : 'Petunjuk: buka set hanya kalau mendekatkan tangan ke 3 fan.');
+    UI.setHint(o.hu ? 'Petunjuk: kamu bisa <b>Hu</b> sekarang!' : 'Petunjuk: buka set hanya kalau tangan tetap punya minimal 1 tai.');
     return;
   }
   if (req.options.tsumo) { UI.setHint('Petunjuk: tanganmu lengkap — tekan <b>Hu</b>!'); return; }
@@ -336,7 +336,7 @@ function showResult(res) {
     const hand = res.hand.filter((t) => t !== res.winTile).sort((a, b) => kindOf(a) - kindOf(b)).map((t) => UI.tile(t)).join('');
     html += `<div class="res-hand">${melds}<div class="meld">${hand}</div><div class="meld">${UI.tile(res.winTile, 'wait')}</div></div>`;
     html += `<ul class="fan-list">${res.score.items.map((i) => `<li><span>${i.name}</span><b>+${i.fan}</b></li>`).join('')}</ul>`;
-    html += `<div class="fan-total"><span>Total${res.score.limit ? ' (batas maksimal)' : ''}</span><span>${res.score.fan} fan</span></div>`;
+    html += `<div class="fan-total"><span>Total${res.score.limit ? ' (batas maksimal)' : ''}</span><span>${res.score.fan} tai</span></div>`;
   }
   html += `<div class="rule"></div><div class="pay-grid">` + res.payments.map((p, s) =>
     `<span>${names[s]}</span><span class="${p > 0 ? 'plus' : p < 0 ? 'minus' : 'zero'}">${p > 0 ? '+' : ''}${p}</span><span class="bal">${UI.fmt(match.chips[s])}</span>`).join('') + `</div>`;
@@ -490,7 +490,7 @@ $('modal').addEventListener('click', (e) => {
 
 function showStats() {
   const rate = stats.rounds ? Math.round((stats.wins / stats.rounds) * 100) : 0;
-  const best = stats.best ? `<div class="res-hand">${stats.best.hand.map((k) => UI.tileK(k)).join('')}</div><p style="text-align:center">${stats.best.fan} fan — ${stats.best.items.join(', ')}</p>` : '<p style="text-align:center;color:var(--muted)">Belum ada.</p>';
+  const best = stats.best ? `<div class="res-hand">${stats.best.hand.map((k) => UI.tileK(k)).join('')}</div><p style="text-align:center">${stats.best.fan} tai — ${stats.best.items.join(', ')}</p>` : '<p style="text-align:center;color:var(--muted)">Belum ada.</p>';
   UI.showModal(`<h2>Statistik</h2>
     <div class="stats-grid">
       <div class="stat"><b>${stats.rounds}</b><span>Ronde dimainkan</span></div>

@@ -1,6 +1,6 @@
 # Mahjong Zamrud
 
-Mahjong 13 kartu gaya Hong Kong untuk iPhone (dan browser lain): kamu melawan 3 bot — **Pak Agus** (agresif), **Pak Wawan** (seimbang), dan **Pak Roti** (hati-hati). HTML/CSS/JavaScript biasa, tanpa framework dan tanpa build step. Saldo memakai **Kecik**, mata uang mainan tanpa uang sungguhan.
+Mahjong 13 kartu **gaya Singapura** untuk iPhone (dan browser lain): kamu melawan 3 bot — **Pak Agus** (agresif), **Pak Wawan** (seimbang), dan **Pak Roti** (hati-hati). HTML/CSS/JavaScript biasa, tanpa framework dan tanpa build step. Saldo memakai **Kecik**, mata uang mainan tanpa uang sungguhan.
 
 Main: **https://juliusr5.github.io/mahyong/**
 
@@ -8,10 +8,11 @@ Main: **https://juliusr5.github.io/mahyong/**
 
 - Tiap pemain memegang 13 kartu (bandar 14). Pada giliranmu ambil 1, buang 1.
 - Ketuk kartu sekali untuk memilih (terangkat), ketuk lagi atau tekan **Buang** untuk membuang.
-- Tombol **Chi / Pong / Kong / Hu / Lewati** hanya muncul kalau aksinya sah. Chi hanya dari pemain di kiri.
-- Menang = 4 set + 1 pasang (atau Seven Pairs / Thirteen Orphans) dengan **minimal 3 fan**.
-- Bayar: menang dari buangan → pembuang bayar 2× nilai dasar; zimo → tiap lawan bayar 1×. Tabel dasar: 3 fan = 8, 4 = 16, 5 = 24, 6 = 32, 7 = 48, 8 = 64, 9 = 96, 10 = 128 Kecik (diatur di `js/scoring.js`, `PAY_TABLE`).
-- Nyalakan **Petunjuk** di Pengaturan untuk saran buangan, kartu yang ditunggu, dan peringatan kartu berbahaya. Daftar fan lengkap ada di menu **Bantuan**.
+- Tombol **Chi / Pong / Kong / Hu / Lewati** hanya muncul kalau aksinya sah. Chi hanya dari pemain di kiri; **Hu boleh dari buangan pemain mana saja** (termasuk yang di kanan).
+- Menang = 4 set + 1 pasang (atau Thirteen Orphans) dengan **minimal 1 tai**, batas 5 tai. Seven Pairs tidak berlaku. 144 kartu, tanpa kartu hewan.
+- Tai: pong naga / angin kursi / angin putaran 1 per set, bunga sesuai kursi 1 per kartu, semua chi 1, **Ping Hu** (semua chi tanpa bunga, pasangan biasa) 4, semua pong 2, campur satu jenis 2, satu jenis murni 4, tiga naga kecil / empat angin kecil 4, kartu terakhir / pengganti kong / merampok kong 1, tangan batas 5 (tiga naga besar, empat angin besar, semua kehormatan, Thirteen Orphans).
+- Bayar: menang dari buangan → pembuang bayar 2× nilai dasar, dua pemain lain 1×; zimo → tiap lawan bayar 2×. Tabel dasar: 1 tai = 4, 2 = 8, 3 = 16, 4 = 32, 5 = 64 Kecik (diatur di `js/scoring.js`, `PAY_TABLE`).
+- Ketuk kartu mana pun (di tangan atau di meja) untuk melihat namanya. Nyalakan **Petunjuk** di Pengaturan untuk saran buangan, kartu yang ditunggu, dan peringatan kartu berbahaya. Daftar tai lengkap ada di menu **Bantuan**.
 
 ## Menjalankan secara lokal
 
@@ -64,7 +65,7 @@ fonts/        Cormorant Garamond & Inter (lisensi OFL, file lisensi disertakan)
 js/tiles.js   definisi kartu, dinding, pengocokan
 js/hand.js    dekomposisi menang, shanten, ukeire
 js/rules.js   alur ronde (state machine) & pertandingan
-js/scoring.js fan & pembayaran (PAY_TABLE)
+js/scoring.js tai & pembayaran (PAY_TABLE)
 js/bot/       otak bot (brain.js), model bahaya (danger.js), Web Worker (worker.js)
 js/ui.js, js/art.js   tampilan & gambar SVG kartu/avatar/koin
 js/sound.js   efek suara Web Audio + getar
@@ -81,11 +82,11 @@ Efek suara dibuat langsung dengan Web Audio di `js/sound.js`, jadi folder `sound
 Bot hanya menerima `view` dari `Round.viewFor(seat)`: tangannya sendiri, semua buangan, set terbuka, bunga, dan sisa dinding. Bot tidak pernah memegang objek ronde, dan di browser berjalan di Web Worker yang hanya menerima data lewat `postMessage`, jadi secara teknis tidak bisa melihat tangan lawan atau urutan dinding.
 
 - **Efisiensi:** shanten cepat (tabel per jenis dengan cache) dan ukeire dari kartu yang belum terlihat.
-- **Nilai tangan:** EV per rencana (biasa, campur satu jenis, satu jenis murni, semua pong, Seven Pairs, Thirteen Orphans). Saat tenpai, fan tiap kartu tunggu dihitung tepat; tunggu yang < 3 fan tidak dihitung.
+- **Nilai tangan:** EV per rencana (biasa, campur satu jenis, satu jenis murni, semua pong, Thirteen Orphans). Saat tenpai, tai tiap kartu tunggu dihitung tepat; tunggu tanpa tai tidak dihitung.
 - **Klaim:** chi/pong/kong hanya kalau EV setelah klaim lebih tinggi dari EV tetap tertutup.
 - **Membaca lawan:** peluang siap per lawan (jumlah buangan, set terbuka, perubahan pola buangan) dan peluang tiap jenis kartu jadi tunggu (buangan lawan, suji, kartu yang sudah habis terlihat, indikasi satu jenis / semua pong).
 - **Serang vs bertahan:** skor = EV serangan − bobot × risiko kena tembak.
-- **Lihat dua langkah (Sulit):** saat kurang satu kartu untuk siap, tiap kartu yang mungkin diambil dicoba, lalu buangan terbaik berikutnya dan fan nyata tiap kartu tunggu dihitung.
+- **Lihat dua langkah (Sulit):** saat kurang satu kartu untuk siap, tiap kartu yang mungkin diambil dicoba, lalu buangan terbaik berikutnya dan tai nyata tiap kartu tunggu dihitung.
 - **Monte Carlo (Sulit):** untuk kandidat yang nyaris seimbang, kartu yang belum terlihat diacak ratusan kali dalam batas ±300 ms di Web Worker.
 - **Level:** Mudah (efisiensi dasar, sedikit salah acak, jarang bertahan, klaim sembarangan), Sedang (efisiensi + mengejar nilai tangan, tanpa membaca lawan), Sulit (semua fitur).
 
@@ -110,6 +111,6 @@ Format **duplicate**: tiap dinding dimainkan 4 kali dengan kursi diputar, jadi t
 
 Catatan penyetelan:
 - Monte Carlo sebagai penentu utama justru merugikan (−1,26 Kecik/ronde), karena simulasi cepatnya tidak memodelkan klaim lawan. Sekarang MC hanya dipakai untuk memutus pilihan yang nyaris seimbang.
-- Keunggulan Sulit datang dari **lihat dua langkah** (nilai tunggu dan fan sungguhan dihitung sebelum siap) dan pertahanan ringan.
+- Keunggulan Sulit datang dari **lihat dua langkah** (nilai tunggu dan tai sungguhan dihitung sebelum siap) dan pertahanan ringan.
 - Sedang sengaja tidak membaca lawan, sesuai pembagian level.
 - Selisih Sulit–Sedang masih lebih kecil dari Sedang–Mudah; ini yang bisa disetel berikutnya.

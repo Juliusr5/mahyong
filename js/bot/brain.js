@@ -1,7 +1,7 @@
 // Otak bot. Hanya menerima `view` (data publik + tangan sendiri) — tidak pernah objek Round,
 // jadi secara teknis tidak bisa melihat tangan lawan atau urutan dinding.
 import { kindOf, countsOf, isDragon } from '../tiles.js';
-import { shantenStd, shantenPairs, shantenOrphans, shanten } from '../hand.js';
+import { shantenStd, shantenOrphans, shanten } from '../hand.js';
 import { scoreHand, basePay, MIN_FAN } from '../scoring.js';
 import { dangerMap } from './danger.js';
 
@@ -43,17 +43,16 @@ function plansFor(melds, c, full) {
     if (others.some((x) => meldSuits.has(x))) continue;
     if (suitCount[s] + suitCount[3] >= 7) {
       const g = [0, 1, 2, 3].map((x) => x === s || x === 3);
-      P.push({ id: 'campur' + s, base: 3, fn: (x) => shantenStd(x, nM, { groups: g }) });
+      P.push({ id: 'campur' + s, base: 2, fn: (x) => shantenStd(x, nM, { groups: g }) });
     }
     if (!meldSuits.has(3) && suitCount[s] >= 8) {
       const g = [0, 1, 2, 3].map((x) => x === s);
-      P.push({ id: 'murni' + s, base: 7, fn: (x) => shantenStd(x, nM, { groups: g }) });
+      P.push({ id: 'murni' + s, base: 4, fn: (x) => shantenStd(x, nM, { groups: g }) });
     }
   }
-  if (!hasChi) P.push({ id: 'pong', base: 3, fn: (x) => shantenStd(x, nM, { noChi: true }) });
+  if (!hasChi) P.push({ id: 'pong', base: 2, fn: (x) => shantenStd(x, nM, { noChi: true }) });
   if (!nM) {
-    P.push({ id: 'pasang', base: 4, fn: (x) => shantenPairs(x), pairs: true });
-    if (shantenOrphans(c) <= 4) P.push({ id: 'yatim', base: 10, fn: (x) => shantenOrphans(x), orphans: true });
+    if (shantenOrphans(c) <= 4) P.push({ id: 'yatim', base: 5, fn: (x) => shantenOrphans(x), orphans: true });
   }
   return P;
 }
@@ -71,12 +70,12 @@ function featureFan(c, melds, view) {
   }
   for (let k = 27; k < 34; k++) if (c[k] === 2 && valuable(k)) f += 0.45;
   const fl = view.flowers[view.seat].map(kindOf);
-  f += fl.length ? fl.filter((x) => x === 34 + view.seatWind || x === 38 + view.seatWind).length : 1;
-  f += melds.some((m) => !m.concealed) ? 0.4 : 1; // tertutup: +1 (dari buangan) atau zimo +1
+  f += fl.filter((x) => x === 34 + view.seatWind || x === 38 + view.seatWind).length;
+  f += 0.6; // peluang tambahan (semua chi / ping hu / kartu terakhir)
   return f;
 }
 
-const payoff = (fan) => 2.4 * basePay(Math.min(10, Math.floor(fan)));
+const payoff = (fan) => 4.8 * basePay(Math.min(5, Math.floor(fan)));
 
 // Peluang menang kasar: butuh (s+1) langkah dalam T giliran.
 // ch = jumlah kesempatan per giliran untuk langkah perantara (ambil + peluang klaim).
@@ -131,8 +130,8 @@ function tenpaiEV(c, melds, view, unseen, fn, U, T, env, pid = '') {
   let qD = 0, qR = 0, vD = 0, vR = 0, uke = 0;
   for (const w of waits) {
     uke += w.n;
-    if (w.tsumo) { qD += w.n / U; vD += (w.n / U) * 3 * basePay(w.tsumo); }
-    if (w.ron) { qR += (w.n / U) * 0.45; vR += (w.n / U) * 0.45 * 2 * basePay(w.ron); }
+    if (w.tsumo) { qD += w.n / U; vD += (w.n / U) * 6 * basePay(w.tsumo); }
+    if (w.ron) { qR += (w.n / U) * 0.45; vR += (w.n / U) * 0.45 * 4 * basePay(w.ron); }
   }
   const pw = winProb(0, 0, 0, qD, qR, T, env.lambda);
   const tot = qD + 3 * qR;
@@ -224,7 +223,7 @@ function rollout(c0, melds, view, pool, fn, rng, T, lambda) {
   for (let t = 0; t < T && idx < need; t++) {
     const d = pool[idx++];
     c[d]++;
-    if (shanten(c, nM) === -1) { const f = score(true); if (f) return surv * 3 * basePay(f); }
+    if (shanten(c, nM) === -1) { const f = score(true); if (f) return surv * 6 * basePay(f); }
     // buang yang menjaga shanten rencana paling kecil
     let bestK = d, bestS = 99;
     for (let k = 0; k < 34; k++) {
@@ -239,7 +238,7 @@ function rollout(c0, melds, view, pool, fn, rng, T, lambda) {
       const k = pool[idx++];
       if (rng() > 0.45 || c[k] >= 4) continue;
       c[k]++;
-      if (shanten(c, nM) === -1) { const f = score(false); if (f) return surv * 2 * basePay(f); }
+      if (shanten(c, nM) === -1) { const f = score(false); if (f) return surv * 4 * basePay(f); }
       c[k]--;
     }
     surv *= 1 - lambda;
